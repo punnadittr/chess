@@ -24,41 +24,19 @@ class Board
 
   end
 
-  def create_board
+  def setup
     
   end
 
   def print_board
     @@board.reverse.each_with_index do |row, i|
       row.each_with_index do |piece, index|
-        if i.even?
-          if index.even?
-            if piece == " "
-              colorme(piece, :black, :cyan)
-            else
-              colorme(piece.display, :black, :cyan)
-            end
-          else
-            if piece == " "
-              colorme(piece, :black, :white)
-            else
-              colorme(piece.display, :black, :white)
-            end
-          end
+        if (i.even? && index.even?) || (i.odd? && index.odd?)
+          colorme(piece, :black, :cyan) if piece == " "
+          colorme(piece.display, :black, :cyan) if piece != " "
         else
-          if index.even?
-            if piece == " "
-              colorme(piece, :black, :white)
-            else
-              colorme(piece.display, :black, :white)
-            end
-          else
-            if piece == " "
-              colorme(piece, :black, :cyan)
-            else
-              colorme(piece.display, :black, :cyan)
-            end
-          end
+          colorme(piece, :black, :white) if piece == " "
+          colorme(piece.display, :black, :white) if piece != " "
         end
       end
       puts
@@ -75,9 +53,9 @@ require_relative "chess_piece"
 
 myboard = Board.new
 pawn1 = Pawn.new 2,4
+pawn2 = Pawn.new 3,5,'b'
+pawn3 = Pawn.new 1,5,'b'
 myboard.board[4][2] = pawn1
-pawn2 = Pawn.new 3,5
-pawn3 = Pawn.new 1,5
 myboard.board[5][3] = pawn2
 myboard.board[5][1] = pawn3
 myboard.print_board

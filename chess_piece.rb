@@ -1,7 +1,8 @@
 class Pawn < Board
-  attr_reader :possible_moves
+  attr_reader :possible_moves, :color
 
-  def initialize(x,y)
+  def initialize(x,y, color = 'w')
+    @color = color
     @x = x
     @y = y
     @position = [x,y]
@@ -12,14 +13,15 @@ class Pawn < Board
   end
 
   def display
-    "\u2659"
+    return "\u2659" if @color == 'w'
+    return "\u265F" if @color == 'b'
   end
 
   def legal_moves
     if @@board[@y+1][@x] == " "
       @legal_moves << [@x, @y+1]
     end
-    if @first_move && @@board[@y+2][@x] == " " && @@board[@y+1][@x] == " "
+    if @first_move && @@board[@y+2][@x] == " " && (@@board[@y+1][@x] == " ")
       @legal_moves << [@x, @y+2] 
     end
     @possible_moves << @legal_moves
@@ -29,7 +31,7 @@ class Pawn < Board
     x = @x - 1
     y = @y + 1
     2.times do
-      if @@board[y][x] != nil && @@board[y][x] != " " 
+      if @@board[y][x] != nil && @@board[y][x] != " " && @@board[y][x].color != self.color
         @capture_moves << [x, y]
       end
       x += 2
