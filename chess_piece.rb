@@ -1,15 +1,14 @@
 class Pawn < Board
-  attr_reader :possible_moves, :color
+  attr_reader :possible_moves, :color, :x, :y, :two_steps, :legal_moves, :capture_moves
 
   def initialize(x,y, color = 'w')
     @color = color
     @x = x
     @y = y
     @position = [x,y]
+    @two_steps = false
     @first_move = true
     @possible_moves = []
-    @legal_moves = []
-    @capture_moves = []
   end
 
   def promote
@@ -45,7 +44,26 @@ class Pawn < Board
     @possible_moves
   end
 
+  def en_passant?
+    @en_passant = []
+    x = @x + 1
+    #x2 = @x - 1
+    y = @y + 1 if self.color == 'w'
+    y = @y - 1 if self.color == 'b'
+    side_space = @@board[@y][x]
+    2.times do
+      if side_space.class == Pawn && side_space.two_steps && side_space.color != self.color
+          @en_passant << [x,y]
+          @possible_moves << [x,y]
+      end
+      x -= 2
+      side_space = @@board[@y][x]
+    end
+    @en_passant
+  end
+
   def capture_moves
+    @capture_moves = []
     x = @x - 1
     y = @y + 1 if self.color == 'w'
     y = @y - 1 if self.color == 'b'
@@ -59,19 +77,45 @@ class Pawn < Board
     @capture_moves
   end
 
+  def en_passant_removal
+    en_moves = @en_passant.flatten
+    current_x = @x
+    current_y = @y
+    destination_x = en_moves[0]
+    destination_y = en_moves[1] - 1 if self.color == 'w'
+    destination_y = en_moves[1] + 1 if self.color == 'b'
+    2.times do
+      if destination_x - 1 == @x && destination_y == current_y
+        @@board[current_y][current_x + 1] = ' '
+        puts "Removed #{current_x+1}, #{current_y} from the board"
+      end
+      destination_x += 2
+      current_x -= 2
+    end
+  end
+
   def move(x_co, y_co)
     current_x = @x
     current_y = @y
     if @possible_moves.include? [x_co, y_co]
       # Replace the old space with ' '
-      @@board[current_y][current_x] = ' ' 
+      @@board[current_y][current_x] = ' '
       # Replace ' ' with current pawn piece
+      if @en_passant.include? [x_co, y_co]
+        en_passant_removal
+      end
       @@board[y_co][x_co] = self
       @x = x_co
       @y = y_co
       @position = [@x, @y]
+      if @y - current_y == 2 || current_y - @y == 2
+        @two_steps = true
+      else
+        @two_steps = false
+      end
       @first_move = false
       @possible_moves = []
+      print_board
     else
       "INVALID MOVE"
     end

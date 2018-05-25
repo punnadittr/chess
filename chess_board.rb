@@ -44,16 +44,18 @@ class Board
 
   # input > ex. 'a5'
   def select(position)
-    #'a5' > ['a','5']
-    split_input = position.chars
-    x = split_input[0]
-    y = (split_input[1].to_i) - 1
+    x = position[0]
+    y = (position[1].to_i) - 1
     input_codes = {'a'=>0,'b'=>1,'c'=>2,'d'=>3,'e'=>4,'f'=>5,'g'=>6,'h'=>7}
     if input_codes.include? x
       @selected = @@board[y][input_codes[x]]
       if @selected == ' '
+        @selected = nil
         return "Invalid Selection"
       else
+        print "Legal Moves: #{@selected.legal_moves}\n"
+        print "Capture Moves: #{@selected.capture_moves}\n"
+        print "En Passant Moves: #{@selected.en_passant?}\n"
         return "Selected " + position
       end
     else
@@ -61,15 +63,21 @@ class Board
     end
   end
 
+  def highlight_selected
+
+  end
+
   def print_board
     @@board.reverse.each_with_index do |row, i|
       row.each_with_index do |piece, index|
         if (i.even? && index.even?) || (i.odd? && index.odd?)
           colorme(piece, :black, :cyan) if piece == " "
-          colorme(piece.display, :black, :cyan) if piece != " "
+          colorme(piece.display, :black, :cyan) if piece != " " && piece != @selected
+          colorme(piece.display, :black, :yellow) if piece == @selected
         else
           colorme(piece, :black, :white) if piece == " "
-          colorme(piece.display, :black, :white) if piece != " "
+          colorme(piece.display, :black, :white) if piece != " " && piece != @selected
+          colorme(piece.display, :black, :yellow) if piece == @selected
         end
       end
       puts
@@ -78,7 +86,6 @@ class Board
   end
 
   def colorme(object, main_color, bg_color)
-    print
     print (" " + object + " ").colorize(:color => main_color, :background => bg_color )
   end
 end
@@ -87,6 +94,29 @@ require_relative "chess_piece"
 
 myboard = Board.new
 myboard.put_pawns
+myboard.select "a2"
+myboard.selected.legal_moves
+myboard.selected.move 0,3
+myboard.selected.legal_moves
+myboard.selected.move 0,4
+myboard.select 'b7'
+myboard.selected.legal_moves
+myboard.selected.move 1,4
+myboard.select 'a5'
+myboard.selected.en_passant?
+myboard.selected.move 1,5
+
+myboard.select 'c7'
+myboard.selected.legal_moves
+myboard.selected.move 2,4
+myboard.selected.legal_moves
+myboard.selected.move 2,3
+myboard.select 'b2'
+myboard.selected.legal_moves
+myboard.selected.move 1,3
+myboard.select 'c4'
+myboard.selected.en_passant?
+myboard.selected.move 1,2
 
 =begin
     @@board = [
