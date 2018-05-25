@@ -1,5 +1,5 @@
 class Pawn < Board
-  attr_reader :possible_moves, :color, :x, :y, :two_steps, :legal_moves, :capture_moves
+  attr_reader :possible_moves, :color, :x, :y, :two_steps, :legal_moves, :capture_moves, :position
 
   def initialize(x,y, color = 'w')
     @color = color
@@ -47,7 +47,6 @@ class Pawn < Board
   def en_passant?
     @en_passant = []
     x = @x + 1
-    #x2 = @x - 1
     y = @y + 1 if self.color == 'w'
     y = @y - 1 if self.color == 'b'
     side_space = @@board[@y][x]
@@ -100,10 +99,11 @@ class Pawn < Board
     if @possible_moves.include? [x_co, y_co]
       # Replace the old space with ' '
       @@board[current_y][current_x] = ' '
-      # Replace ' ' with current pawn piece
+      # Remove the piece accordingly to the en passant condition
       if @en_passant.include? [x_co, y_co]
         en_passant_removal
       end
+      # Replace ' ' with current pawn piece
       @@board[y_co][x_co] = self
       @x = x_co
       @y = y_co

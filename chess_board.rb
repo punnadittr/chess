@@ -22,24 +22,38 @@ class Board
 
   # Put black & white pawns (16 pieces) on the board
   def put_pawns
-    x = 0
-    y1 = 1
-    y2 = 6
-    white_pawns = {}
-    black_pawns = {}
-    i = 1
-    8.times do
-      white_pawns["w_p_#{i}"] = Pawn.new(x,y1)
-      black_pawns["b_p_#{i}"] = Pawn.new(x,y2,'b')
-      @@board[y1][x] = white_pawns["w_p_#{i}"]
-      @@board[y2][x] = black_pawns["b_p_#{i}"]
-      i += 1
-      x += 1
+    row = 1
+    color = 'w'
+    2.times do
+      @@board[row].each_index do |i|
+        @@board[row][i] = Pawn.new(i, row, color)
+      end
+      row = 6
+      color = 'b'
     end
   end
 
   def setup
-    
+    put_pawns
+    row = 0
+    color = 'w'
+    2.times do
+      @@board[row].each_index do |i|
+        if i == 0 || i == 7
+          @@board[row][i] = Rook.new(i, row, color)
+        elsif i == 1 || i == 6
+          @@board[row][i] = Knight.new(i, row, color)
+        elsif i == 2 || i == 5
+          @@board[row][i] = Bishop.new(i, row, color)
+        elsif i == 3
+          @@board[row][i] = Queen.new(i, row, color)
+        else
+          @@board[row][i] = King.new(i, row, color)
+        end
+      end
+      row = 7
+      color = 'b'
+    end
   end
 
   # input > ex. 'a5'
@@ -55,16 +69,12 @@ class Board
       else
         print "Legal Moves: #{@selected.legal_moves}\n"
         print "Capture Moves: #{@selected.capture_moves}\n"
-        print "En Passant Moves: #{@selected.en_passant?}\n"
+        print "En Passant Moves: #{@selected.en_passant?}\n" if self.class == Pawn
         return "Selected " + position
       end
     else
       return "Invalid Selection"
     end
-  end
-
-  def highlight_selected
-
   end
 
   def print_board
@@ -90,10 +100,15 @@ class Board
   end
 end
 
-require_relative "chess_piece"
+require_relative "pieces_lib/pawn"
+require_relative "pieces_lib/rook"
+require_relative "pieces_lib/bishop"
+require_relative "pieces_lib/queen"
+require_relative "pieces_lib/knight"
+require_relative "pieces_lib/king"
 
 myboard = Board.new
-myboard.put_pawns
+myboard.setup
 myboard.select "a2"
 myboard.selected.legal_moves
 myboard.selected.move 0,3
