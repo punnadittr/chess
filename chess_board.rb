@@ -1,4 +1,5 @@
 require "colorize"
+require_relative "chess_piece.rb"
 # create a chessboard and function to assign item to the board
 class Board
   attr_accessor :board
