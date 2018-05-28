@@ -69,7 +69,7 @@ class Board
       else
         print "Legal Moves: #{@selected.legal_moves}\n"
         print "Capture Moves: #{@selected.capture_moves}\n"
-        print "En Passant Moves: #{@selected.en_passant?}\n" if self.class == Pawn
+        print "En Passant Moves: #{@selected.en_passant?}\n"
         return "Selected " + position
       end
     else
@@ -108,8 +108,12 @@ require_relative "pieces_lib/knight"
 require_relative "pieces_lib/king"
 
 myboard = Board.new
-myboard.setup
-myboard.select "a2"
+myboard.board[3][3] = Rook.new 3,3
+myboard.board[7][3] = Pawn.new 3,7,'b'
+myboard.board[0][3] = Pawn.new 3,0,'b'
+myboard.board[3][0] = Pawn.new 0,3,'b'
+myboard.board[3][7] = Pawn.new 7,3,'b'
+myboard.select "d4"
 myboard.selected.legal_moves
 myboard.selected.move 0,3
 myboard.selected.legal_moves
