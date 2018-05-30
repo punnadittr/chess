@@ -3,9 +3,9 @@ class Rook < Board
   CONDITION1 = lambda { |pos| pos >= 0 }
   CONDITION2 = lambda { |pos| pos <= 7 }
   CONDITIONS = [CONDITION1,CONDITION2,CONDITION1,CONDITION2]
-  attr_reader :legal_moves, :color, :capture_moves
+  attr_reader :color, :capture_moves
 
-  def initialize(x,y, color = 'w')
+  def initialize(x,y, color = "w")
     @color = color
     @x = x
     @y = y
@@ -14,8 +14,8 @@ class Rook < Board
   end
 
   def display
-    return "\u2656" if @color == 'w'
-    return "\u265C" if @color == 'b'
+    return "\u2656" if @color == "w"
+    return "\u265C" if @color == "b"
   end
 
   def get_moves(mode,x,y)
@@ -27,9 +27,11 @@ class Rook < Board
       return true
     elsif mode == "capture"
       if @@board[y][x] != " "
+        # Add the position to capture move if color is different
         if @@board[y][x].color != self.color
           @capture_moves << [x,y]
           return true
+        # If the position has the piece with same color
         else
           return true
         end
@@ -38,7 +40,7 @@ class Rook < Board
     end
   end
 
-  def legal_moves(mode = 'legal')
+  def legal_moves(mode = "legal")
     @possible_moves = []
     @legal_moves = [] if mode == "legal"
     x1 = @x - 1
@@ -57,6 +59,7 @@ class Rook < Board
         ord += 1 if i.odd?
       end
     end
+    @legal_moves
   end
 
   def capture_moves

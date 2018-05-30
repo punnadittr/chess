@@ -1,8 +1,8 @@
 class Knight < Board
 
-  attr_reader :color
   CONDITION = lambda { |pos| pos <= 7 && pos >= 0 }
-
+  attr_reader :color
+  
   def initialize(x,y, color = 'w')
     @color = color
     @x = x
