@@ -77,26 +77,33 @@ class Board
     end
   end
 
-  def print_board
+  def colorize_spaces(piece, highlight, regular,x,y)
+    # Reversing y when printing
     converts = {7=>0,6=>1,5=>2,4=>3,3=>4,2=>5,1=>6,0=>7}
-    @@board.reverse.each_with_index do |row, i|
-      row.each_with_index do |piece, index|
-        if (i.even? && index.even?) || (i.odd? && index.odd?)
-          if (!(@selected.nil?)) && (@selected.legal_moves.include? [index, converts[i]])
-            colorme(piece, :yellow) 
-          else
-            colorme(piece, :cyan) if piece == " "
-          end
-          colorme(piece.display, :cyan) if piece != " " && piece != @selected
-          colorme(piece.display, :yellow) if piece == @selected
+    # Empty space case
+    if piece == " "
+      # If the space belongs to legal moves of the selected piece, highlight yellow
+      if !@selected.nil? && (@selected.legal_moves.include? [x, converts[y]])
+        print_and_colorize(piece, highlight)
+      # If not then print regular color
+      else
+        print_and_colorize(piece, regular) 
+      end
+    # Not empty case (piece exists)
+    elsif piece == @selected
+      print_and_colorize(piece.display, highlight)
+    else
+      print_and_colorize(piece.display, regular)
+    end
+  end
+
+  def print_board
+    @@board.reverse.each_with_index do |row, y|
+      row.each_with_index do |piece, x|
+        if (y.even? && x.even?) || (y.odd? && x.odd?)
+          colorize_spaces(piece, :yellow, :cyan, x, y)
         else
-          if (!(@selected.nil?)) && (@selected.legal_moves.include? [index, converts[i]])
-            colorme(piece, :light_yellow) 
-          else
-            colorme(piece, :white) if piece == " "
-          end
-          colorme(piece.display, :white) if piece != " " && piece != @selected
-          colorme(piece.display, :light_yellow) if piece == @selected
+          colorize_spaces(piece, :light_yellow, :white, x, y)
         end
       end
       puts
@@ -104,7 +111,7 @@ class Board
     return
   end
 
-  def colorme(object, bg_color)
+  def print_and_colorize(object, bg_color)
     print (" " + object + " ").colorize(:color => :black, :background => bg_color )
   end
 end
@@ -117,6 +124,9 @@ require_relative "pieces_lib/knight"
 require_relative "pieces_lib/king"
 
 myboard = Board.new
+myboard.setup
+myboard.select 'a2'
+myboard.print_board
 myboard.board[4][4] = Knight.new 4,4
 myboard.select "e5"
 myboard.board[3][3] = Rook.new 3,3
