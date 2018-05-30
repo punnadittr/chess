@@ -21,7 +21,6 @@ class Pawn < Board
   end
 
   def legal_moves
-    @possible_moves = []
     @legal_moves = []
     # Different Y coordinates for black and white pieces (moving up and down)
     if self.color == 'w'
@@ -34,14 +33,12 @@ class Pawn < Board
     # The move is available if the space is empty
     if @@board[y][@x] == " "
       @legal_moves << [@x, y]
-      @possible_moves << [@x, y]
     end
     # For first move of a pawn, 2 moves forward is allowed
     if @first_move && @@board[y2][@x] == " " && (@@board[y][@x] == " ")
       @legal_moves << [@x, y2] 
-      @possible_moves << [@x, y2]
     end
-    @possible_moves
+    @legal_moves
   end
 
   def en_passant?
@@ -52,8 +49,7 @@ class Pawn < Board
     side_space = @@board[@y][x]
     2.times do
       if side_space.class == Pawn && side_space.two_steps && side_space.color != self.color
-          @en_passant << [x,y]
-          @possible_moves << [x,y]
+        @en_passant << [x,y]
       end
       x -= 2
       side_space = @@board[@y][x]
@@ -69,7 +65,6 @@ class Pawn < Board
     2.times do
       if @@board[y][x] != nil && @@board[y][x] != " " && @@board[y][x].color != self.color
         @capture_moves << [x, y]
-        @possible_moves << [x, y]
       end
       x += 2
     end
@@ -93,20 +88,20 @@ class Pawn < Board
     end
   end
 
-  def move(x_co, y_co)
-    current_x = @x
+  def move(x, y)
+    @possible_moves = @legal_moves + @capture_moves + @en_passant
     current_y = @y
-    if @possible_moves.include? [x_co, y_co]
+    if @possible_moves.include? [x, y]
       # Replace the old space with ' '
-      @@board[current_y][current_x] = ' '
+      @@board[@y][@x] = ' '
       # Remove the piece accordingly to the en passant condition
-      if @en_passant.include? [x_co, y_co]
+      if @en_passant.include? [x, y]
         en_passant_removal
       end
       # Replace ' ' with current pawn piece
-      @@board[y_co][x_co] = self
-      @x = x_co
-      @y = y_co
+      @@board[y][x] = self
+      @x = x
+      @y = y
       @position = [@x, @y]
       if @y - current_y == 2 || current_y - @y == 2
         @two_steps = true

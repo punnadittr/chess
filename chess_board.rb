@@ -108,6 +108,7 @@ require_relative "pieces_lib/knight"
 require_relative "pieces_lib/king"
 
 myboard = Board.new
+myboard.setup
 myboard.board[3][3] = Rook.new 3,3
 myboard.board[7][3] = Pawn.new 3,7,'b'
 myboard.board[0][3] = Pawn.new 3,0,'b'
