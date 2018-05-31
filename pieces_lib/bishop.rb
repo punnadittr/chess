@@ -1,24 +1,12 @@
-class Bishop < Board
-
-  CONDITION = lambda { |pos| pos >= 0 && pos <= 7 }
-  attr_reader :color
-
-  def initialize(x,y, color = 'w')
-    @color = color
-    @x = x
-    @y = y
-    @position = [x,y]
-    @possible_moves = []
-    @legal_moves = []
-  end
+class Bishop < Pieces
 
   def display
     return "\u2657" if @color == 'w'
     return "\u265D" if @color == 'b'
   end
 
-  def legal_moves
-    @legal_moves = []
+  def legal_moves(mode = "legal")
+    @legal_moves = [] if mode == "legal"
     x1 = @x + 1
     y1 = @y + 1
     x2 = @x - 1
@@ -28,9 +16,7 @@ class Bishop < Board
       x = ords[0]
       y = ords[1]
       while CONDITION.call(x) && CONDITION.call(y)
-        if @@board[y][x] == " "
-          @legal_moves << [x,y]
-        end
+        break if get_moves(mode, x, y)
         x += 1 if i < 2
         x -= 1 if i >= 2
         y += 1 if i.even?
@@ -39,9 +25,4 @@ class Bishop < Board
     end
     @legal_moves
   end
-
-  def capture_moves
-    nil
-  end
-
 end

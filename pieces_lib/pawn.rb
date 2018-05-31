@@ -12,8 +12,15 @@ class Pawn < Board
     @en_passant = []
   end
 
-  def promote
-
+  def promote(color)
+    color = @color
+    puts "Please choose a new piece to replace (Q,B,R,N)"
+    piece = gets.chomp
+    @@board[@y][@x] = Queen.new(@x, @y, color) if piece == "Q"
+    @@board[@y][@x] = Bishop.new(@x, @y, color) if piece == "B"
+    @@board[@y][@x] = Rook.new(@x, @y, color) if piece == "R"
+    @@board[@y][@x] = Knight.new(@x, @y, color) if piece == "N"
+    @selected = @@board[@y][@x]
   end
 
   def display
@@ -112,6 +119,8 @@ class Pawn < Board
       @first_move = false
       @possible_moves = []
       print_board
+      promote("w") if @color == "w" && y == 7
+      promote("b") if @color == "b" && y == 0
     else
       "INVALID MOVE"
     end

@@ -1,17 +1,4 @@
-class Knight < Board
-
-  CONDITION = lambda { |pos| pos <= 7 && pos >= 0 }
-  attr_reader :color
-  
-  def initialize(x,y, color = 'w')
-    @color = color
-    @x = x
-    @y = y
-    @position = [x,y]
-    @possible_moves = []
-    @legal_moves = []
-    @capture_moves = []
-  end
+class Knight < Pieces
 
   def display
     return "\u2658" if @color == 'w'
@@ -50,18 +37,4 @@ class Knight < Board
     @capture_moves
   end
 
-  def move(x,y)
-    @possible_moves = @legal_moves + @capture_moves
-    if @possible_moves.include? [x,y]
-      @@board[@y][@x] = " "
-      @@board[y][x] = self
-      @x = x
-      @y = y
-      @position = [x,y]
-      @possible_moves = []
-      print_board
-    else
-      return "INVALID MOVE"
-    end
-  end
 end

@@ -33,23 +33,21 @@ class Board
     end
   end
 
+  def put_piece(piece, x, y, color)
+    @@board[y][x] = piece.new(x, y, color)
+  end
+
   def setup
     put_pawns
     row = 0
     color = 'w'
     2.times do
       @@board[row].each_index do |i|
-        if i == 0 || i == 7
-          @@board[row][i] = Rook.new(i, row, color)
-        elsif i == 1 || i == 6
-          @@board[row][i] = Knight.new(i, row, color)
-        elsif i == 2 || i == 5
-          @@board[row][i] = Bishop.new(i, row, color)
-        elsif i == 3
-          @@board[row][i] = Queen.new(i, row, color)
-        else
-          @@board[row][i] = King.new(i, row, color)
-        end
+        put_piece(Rook, i, row, color) if i == 0 || i == 7
+        put_piece(Knight, i, row, color) if i == 1 || i == 6
+        put_piece(Bishop, i, row, color) if i == 2 || i == 5
+        put_piece(Queen, i, row, color) if i == 3
+        put_piece(King, i, row, color) if i == 4
       end
       row = 7
       color = 'b'
@@ -77,7 +75,7 @@ class Board
     end
   end
 
-  def colorize_spaces(piece, highlight, regular,x,y)
+  def colorize_spaces(piece, highlight, regular, capture, x, y)
     # Reversing y when printing
     converts = {7=>0,6=>1,5=>2,4=>3,3=>4,2=>5,1=>6,0=>7}
     # Empty space case
@@ -90,10 +88,14 @@ class Board
         print_and_colorize(piece, regular) 
       end
     # Not empty case (piece exists)
-    elsif piece == @selected
-      print_and_colorize(piece.display, highlight)
-    else
-      print_and_colorize(piece.display, regular)
+    else 
+      if !@selected.nil? && (@selected.capture_moves.include? piece.position)
+        print_and_colorize(piece.display, capture)
+      elsif piece == @selected
+        print_and_colorize(piece.display, highlight)
+      else
+        print_and_colorize(piece.display, regular)
+      end
     end
   end
 
@@ -101,9 +103,9 @@ class Board
     @@board.reverse.each_with_index do |row, y|
       row.each_with_index do |piece, x|
         if (y.even? && x.even?) || (y.odd? && x.odd?)
-          colorize_spaces(piece, :yellow, :cyan, x, y)
+          colorize_spaces(piece, :yellow, :cyan, :light_red, x, y)
         else
-          colorize_spaces(piece, :light_yellow, :white, x, y)
+          colorize_spaces(piece, :light_yellow, :white, :light_red, x, y)
         end
       end
       puts
@@ -116,6 +118,7 @@ class Board
   end
 end
 
+require_relative "pieces_lib/piece"
 require_relative "pieces_lib/pawn"
 require_relative "pieces_lib/rook"
 require_relative "pieces_lib/bishop"
@@ -125,48 +128,7 @@ require_relative "pieces_lib/king"
 
 myboard = Board.new
 myboard.setup
-myboard.select 'a2'
 myboard.print_board
-myboard.board[4][4] = Knight.new 4,4
-myboard.select "e5"
-myboard.board[3][3] = Rook.new 3,3
-myboard.board[7][3] = Pawn.new 3,7,'b'
-myboard.board[0][3] = Pawn.new 3,0,'b'
-myboard.board[3][0] = Pawn.new 0,3,'b'
-myboard.board[3][7] = Pawn.new 7,3,'b'
-myboard.select "d4"
-myboard.selected.legal_moves
-myboard.selected.move 0,3
-myboard.selected.legal_moves
-myboard.selected.move 0,4
-myboard.select 'b7'
-myboard.selected.legal_moves
-myboard.selected.move 1,4
-myboard.select 'a5'
-myboard.selected.en_passant?
-myboard.selected.move 1,5
-
-myboard.select 'c7'
-myboard.selected.legal_moves
-myboard.selected.move 2,4
-myboard.selected.legal_moves
-myboard.selected.move 2,3
 myboard.select 'b2'
-myboard.selected.legal_moves
 myboard.selected.move 1,3
-myboard.select 'c4'
-myboard.selected.en_passant?
-myboard.selected.move 1,2
-
-=begin
-    @@board = [
-      ["\u2656","\u2658","\u2657","\u2655","\u265A","\u2657","\u2658","\u2656"],
-      ["\u2659","\u2659","\u2659","\u2659","\u2659","\u2659","\u2659","\u2659"],
-      [" "," "," "," "," "," "," "," "],
-      [" "," "," "," "," "," "," "," "],
-      [" "," "," "," "," "," "," "," "],
-      [" "," "," "," "," "," "," "," "],
-      ["\u2659","\u2659","\u2659","\u2659","\u2659","\u2659","\u2659","\u2659"],
-      ["\u2656","\u2658","\u2657","\u2655","\u265A","\u2657","\u2658","\u2656"]
-    ]
-=end
+myboard.select 'c1'
