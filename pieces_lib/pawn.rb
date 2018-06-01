@@ -1,4 +1,4 @@
-class Pawn < Board
+class Pawn < Pieces
   attr_reader :possible_moves, :color, :x, :y, :two_steps, :legal_moves, :capture_moves, :position
 
   def initialize(x,y, color = "w")
@@ -10,6 +10,7 @@ class Pawn < Board
     @first_move = true
     @possible_moves = []
     @en_passant = []
+    @check_move = []
   end
 
   def promote(color)
@@ -65,7 +66,21 @@ class Pawn < Board
     @en_passant
   end
 
+  def check_move
+    return @check_move = [] if @@selected.nil?
+    x = @x - 1
+    y = @y + 1 if self.color == "w"
+    y = @y - 1 if self.color == "b"
+    if @@selected.class == King && @@selected.legal_moves("legal", true) != nil
+      if @@selected.legal_moves("legal", true).include? [x, y]
+        @check_move << [x, y]
+      end
+    end
+    @check_move
+  end
+
   def capture_moves
+    @check_move = []
     @capture_moves = []
     x = @x - 1
     y = @y + 1 if self.color == "w"
@@ -96,7 +111,8 @@ class Pawn < Board
     end
   end
 
-  def move(x, y)
+  def move(position)
+    x, y = convert_move(position)
     @possible_moves = @legal_moves + @capture_moves + @en_passant
     current_y = @y
     if @possible_moves.include? [x, y]

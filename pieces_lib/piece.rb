@@ -1,7 +1,8 @@
 class Pieces < Board
   
   CONDITION = lambda { |pos| pos >= 0 && pos <= 7 }
-  attr_reader :color, :legal_moves, :capture_moves, :x, :y, :possible_moves, :position
+  attr_reader :color, :capture_moves, :x, :y, :possible_moves, :position
+  attr_accessor :legal_moves, :check_move
 
   def initialize(x,y, color = 'w')
     @color = color
@@ -10,13 +11,24 @@ class Pieces < Board
     @position = [x,y]
     @possible_moves = []
     @legal_moves = []
-    @capture_moves
+    @capture_moves = []
+    @check_move = []
+    @check_step = false
   end
 
   def get_moves(mode, x, y)
     if mode == "legal"
       if @@board[y][x] == " "
-        @legal_moves << [x,y]
+        if @check_step == false
+          @legal_moves << [x,y] 
+          return false
+        elsif @check_step == true
+          @check_move << [x,y]
+          @check_step = false
+          return true
+        end
+      elsif @@board[y][x].class == King
+        @check_step = true
         return false
       end
       return true
@@ -41,7 +53,20 @@ class Pieces < Board
     @capture_moves
   end
 
-  def move(x, y)
+  def convert_move(position)
+    return "INVALID MOVE(CV)" if position.length > 2
+    x = position[0]
+    y = (position[1].to_i) - 1
+    input_codes = {'a'=>0,'b'=>1,'c'=>2,'d'=>3,'e'=>4,'f'=>5,'g'=>6,'h'=>7}
+    if input_codes.include? x
+      return input_codes[x], y
+    else
+      "INVALID MOVE(CV)"
+    end
+  end
+
+  def move(position)
+    x, y = convert_move(position)
     @possible_moves = @legal_moves + @capture_moves
     if @possible_moves.include? [x,y]
       @@board[@y][@x] = " "
@@ -52,7 +77,7 @@ class Pieces < Board
       @possible_moves = []
       print_board
     else
-      return "INVALID MOVE"
+      return "INVALID MOVE(MV)"
     end
   end
 end

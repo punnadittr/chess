@@ -1,4 +1,4 @@
-class Queen < Rook
+class Queen < Pieces
 
   def display
     return "\u2655" if @color == 'w'
@@ -6,6 +6,7 @@ class Queen < Rook
   end
 
   def legal_moves(mode = "legal")
+    @check_move = [] if mode == "legal"
     @legal_moves = [] if mode == "legal"
     x = @x
     y = @y
