@@ -1,33 +1,30 @@
 class Rook < Pieces
 
-  CONDITION1 = lambda { |pos| pos >= 0 }
-  CONDITION2 = lambda { |pos| pos <= 7 }
-  CONDITIONS = [CONDITION1,CONDITION2,CONDITION1,CONDITION2]
-
   def display
     return "\u2656" if @color == "w"
     return "\u265C" if @color == "b"
   end
 
-  def legal_moves(mode = "legal")
-    @possible_moves = []
-    @legal_moves = [] if mode == "legal"
+  def get_all_moves(mode = "legal")
     x1 = @x - 1
     x2 = @x + 1
     y1 = @y - 1
     y2 = @y + 1
-    lines = [x1,x2,y1,y2]
+    lines = [[x1,@y],[x2,@y],[@x,y1],[@x,y2]]
     lines.each_with_index do |ord, i|
-      while CONDITIONS[i].call(ord)
-        if i < 2
-          break if get_moves(mode,ord, @y)
+      x = ord[0]
+      y = ord[1]
+      while CONDITION.call(x) && CONDITION.call(y)
+        if mode == "legal"
+          break if get_legal_moves(x, y)
         else
-          break if get_moves(mode,@x, ord)
+          break if get_capture_moves(x,y)
         end
-        ord -= 1 if i.even?
-        ord += 1 if i.odd?
+        x -= 1 if i == 0
+        x += 1 if i == 1
+        y -= 1 if i == 2
+        y += 1 if i == 3
       end
     end
-    @legal_moves
   end
 end

@@ -38,9 +38,15 @@ class Pieces < Board
 
   end
 
+  def legal_moves
+    @legal_moves = []
+    get_all_moves("legal")
+    @legal_moves
+  end
+
   def capture_moves
     @capture_moves = []
-    legal_moves("capture")
+    get_all_moves("capture")
     @capture_moves
   end
 
