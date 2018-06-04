@@ -66,6 +66,7 @@ class Pawn < Pieces
     @en_passant
   end
 
+  # Return the moves that will put King in check in the next turn
   def check_move
     return @check_move = [] if @@selected.nil?
     x = @x - 1

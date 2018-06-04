@@ -5,6 +5,7 @@ class Knight < Pieces
     return "\u265E" if @color == 'b'
   end
 
+  # Get one legal move of one position
   def get_legal_move(a,b)
     x = @x+a
     y = @y+b
@@ -23,6 +24,7 @@ class Knight < Pieces
     end
   end
 
+  # Get all legal_moves of one position
   def legal_moves
     @capture_moves = []
     @legal_moves = []
