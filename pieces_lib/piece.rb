@@ -1,8 +1,8 @@
 class Pieces < Board
   
   CONDITION = lambda { |x,y| x.between?(0,7) && y.between?(0,7) }
-  attr_reader :color, :capture_moves, :x, :y, :possible_moves, :position
-  attr_accessor :legal_moves, :check_move
+  attr_reader :color, :capture_moves, :x, :y, :position, :legal_moves
+  attr_accessor :check_move
 
   def initialize(x,y, color = 'w')
     @color = color
@@ -13,7 +13,14 @@ class Pieces < Board
     @legal_moves = []
     @capture_moves = []
     @check_move = []
-    @check_step = false
+  end
+
+  def show_legal_moves
+    @legal_moves
+  end
+
+  def show_capture_moves
+    @capture_moves
   end
 
   def get_legal_moves(x, y)
@@ -34,8 +41,25 @@ class Pieces < Board
     end
   end
 
-  def get_check_move(x, y)
+  def check_move
+    @check_move = []
+    get_check_move
+    @check_move
+  end
 
+  def get_check_move
+    unless possible_moves.empty?
+      @possible_moves.each do |pos|
+        if @@selected.possible_moves.include? pos
+          @check_move << pos
+        end
+      end
+    end
+  end
+
+  def possible_moves
+    @possible_moves = []
+    @possible_moves = legal_moves + capture_moves
   end
 
   def legal_moves
@@ -64,7 +88,6 @@ class Pieces < Board
 
   def move(position)
     x, y = convert_move(position)
-    @possible_moves = @legal_moves + @capture_moves
     if @possible_moves.include? [x,y]
       @@board[@y][@x] = " "
       @@board[y][x] = self

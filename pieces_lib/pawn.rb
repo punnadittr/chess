@@ -1,5 +1,5 @@
 class Pawn < Pieces
-  attr_reader :possible_moves, :color, :x, :y, :two_steps, :legal_moves, :capture_moves, :position
+  attr_reader :color, :x, :y, :two_steps, :legal_moves, :capture_moves, :position
 
   def initialize(x,y, color = "w")
     @color = color
@@ -27,6 +27,11 @@ class Pawn < Pieces
   def display
     return "\u2659" if @color == "w"
     return "\u265F" if @color == "b"
+  end
+
+  def possible_moves
+    @possible_moves = []
+    @possible_moves = legal_moves + capture_moves + en_passant?
   end
 
   def legal_moves
@@ -67,19 +72,20 @@ class Pawn < Pieces
   end
 
   # Return the moves that will put King in check in the next turn
+=begin
   def check_move
     return @check_move = [] if @@selected.nil?
     x = @x - 1
     y = @y + 1 if self.color == "w"
     y = @y - 1 if self.color == "b"
-    if @@selected.class == King && @@selected.legal_moves("legal", true) != nil
-      if @@selected.legal_moves("legal", true).include? [x, y]
+    if @@selected.class == King && @@selected.get_all_moves("legal", true) != nil
+      if @@selected.get_all_moves("legal", true).include? [x, y]
         @check_move << [x, y]
       end
     end
     @check_move
   end
-
+=end
   def capture_moves
     @check_move = []
     @capture_moves = []
@@ -114,7 +120,6 @@ class Pawn < Pieces
 
   def move(position)
     x, y = convert_move(position)
-    @possible_moves = @legal_moves + @capture_moves + @en_passant
     current_y = @y
     if @possible_moves.include? [x, y]
       # Replace the old space with " "
@@ -134,7 +139,6 @@ class Pawn < Pieces
         @two_steps = false
       end
       @first_move = false
-      @possible_moves = []
       print_board
       promote("w") if @color == "w" && y == 7
       promote("b") if @color == "b" && y == 0

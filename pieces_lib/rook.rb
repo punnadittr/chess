@@ -16,7 +16,7 @@ class Rook < Pieces
       y = ords[1]
       while CONDITION.call(x,y)
         if mode == "legal"
-          break if get_legal_moves(x, y)
+          break if get_legal_moves(x,y)
         else
           break if get_capture_moves(x,y)
         end
