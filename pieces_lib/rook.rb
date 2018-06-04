@@ -14,7 +14,7 @@ class Rook < Pieces
     lines.each_with_index do |ord, i|
       x = ord[0]
       y = ord[1]
-      while CONDITION.call(x) && CONDITION.call(y)
+      while CONDITION.call(x,y)
         if mode == "legal"
           break if get_legal_moves(x, y)
         else

@@ -135,7 +135,7 @@ require_relative "pieces_lib/knight"
 require_relative "pieces_lib/king"
 
 myboard = Board.new
-myboard.board[3][3] = Rook.new 3,3
+myboard.board[3][3] = Queen.new 3,3
 myboard.setup
 myboard.select 'e2'
 myboard.selected.move 'e4'
