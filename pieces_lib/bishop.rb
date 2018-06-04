@@ -5,8 +5,7 @@ class Bishop < Pieces
     return "\u265D" if @color == 'b'
   end
 
-  def legal_moves(mode = "legal")
-    @legal_moves = [] if mode == "legal"
+  def get_all_moves(mode = "legal")
     x1 = @x + 1
     y1 = @y + 1
     x2 = @x - 1
@@ -15,14 +14,17 @@ class Bishop < Pieces
     lines.each_with_index do |ords, i|
       x = ords[0]
       y = ords[1]
-      while CONDITION.call(x) && CONDITION.call(y)
-        break if get_moves(mode, x, y)
+      while CONDITION.call(x,y)
+        if mode == "legal"
+          break if get_legal_moves(x,y)
+        else
+          break if get_capture_moves(x,y)
+        end
         x += 1 if i < 2
         x -= 1 if i >= 2
         y += 1 if i.even?
         y -= 1 if i.odd?
       end
     end
-    @legal_moves
   end
 end

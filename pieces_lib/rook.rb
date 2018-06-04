@@ -11,9 +11,9 @@ class Rook < Pieces
     y1 = @y - 1
     y2 = @y + 1
     lines = [[x1,@y],[x2,@y],[@x,y1],[@x,y2]]
-    lines.each_with_index do |ord, i|
-      x = ord[0]
-      y = ord[1]
+    lines.each_with_index do |ords, i|
+      x = ords[0]
+      y = ords[1]
       while CONDITION.call(x,y)
         if mode == "legal"
           break if get_legal_moves(x, y)

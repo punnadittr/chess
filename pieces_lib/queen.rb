@@ -20,10 +20,10 @@ class Queen < Pieces
         else
           break if get_capture_moves(x,y)
         end
-          y += 1 if i == 0 || i == 2 || i == 5
-          y -= 1 if i == 1 || i == 3 || i == 6
-          x += 1 if i.between?(2,4)
-          x -= 1 if i.between?(5,7)
+        x += 1 if i.between?(2,4)
+        x -= 1 if i.between?(5,7)
+        y += 1 if [0,2,5].include? i
+        y -= 1 if [1,3,6].include? i
       end
     end
   end
