@@ -99,7 +99,8 @@ class Board
         if piece.class == Pawn
           @@all_legal_moves << piece.possible_capture_moves
         else
-          @@all_legal_moves << piece.legal_moves
+          piece.capture_moves
+          @@all_legal_moves << piece.legal_moves << piece.check_move
         end
       end
     end
@@ -162,19 +163,5 @@ require_relative "pieces_lib/knight"
 require_relative "pieces_lib/king"
 
 myboard = Board.new
-myboard.setup
-myboard.select'b1'
-myboard.select'e2'
-myboard.selected.move 'e4'
-myboard.select 'e1'
-myboard.selected.move 'e2'
-myboard.select 'e2'
-myboard.selected.move 'f3'
-myboard.select 'f3'
-myboard.selected.move 'f4'
-myboard.select 'f4'
-myboard.selected.move 'f5'
-myboard.select 'f7'
-myboard.selected.move 'f6'
-myboard.select 'f5'
-myboard.print_board
+myboard.board[3][3] = King.new 3,3
+myboard.board[5][5] = Queen.new 5,5,'b'
