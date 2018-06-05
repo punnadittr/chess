@@ -95,9 +95,10 @@ class Board
     @@all_legal_moves = []
     @@board.each do |row|
       row.each do |piece|
-        if piece.class == Pawn && piece.color != self.color
+        next if piece == " " || piece.color == self.color
+        if piece.class == Pawn
           @@all_legal_moves << piece.possible_capture_moves
-        elsif piece != " " && piece.color != self.color
+        else
           @@all_legal_moves << piece.legal_moves
         end
       end
