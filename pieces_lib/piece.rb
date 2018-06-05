@@ -13,6 +13,7 @@ class Pieces < Board
     @legal_moves = []
     @capture_moves = []
     @check_move = []
+    @king_step = false
   end
 
   def show_legal_moves
@@ -33,10 +34,20 @@ class Pieces < Board
   end
 
   def get_capture_moves(x, y)
-    if @@board[y][x] != " "
+    if @king_step == true
+      @check_move << [x,y]
+      @king_step = false
+      return true
+    elsif @@board[y][x] != " "
       if @@board[y][x].color != self.color
-        @capture_moves << [x,y]
-        return true
+        if @@board[y][x].class == King
+          @capture_moves << [x,y]
+          @king_step = true
+          return false
+        else
+          @capture_moves << [x,y]
+          return true
+        end
       else
         return true
       end
@@ -57,6 +68,7 @@ class Pieces < Board
   end
 
   def capture_moves
+    @check_move = []
     @capture_moves = []
     get_all_moves("capture")
     @capture_moves
