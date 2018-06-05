@@ -12,7 +12,7 @@ class Knight < Pieces
     x2 = @x+b
     y2 = @y+a
     2.times do
-      if CONDITION.call(x) && CONDITION.call(y)
+      if CONDITION.call(x,y)
         if @@board[y][x] == " "
           @legal_moves << [x,y]
         elsif @@board[y][x].color != self.color

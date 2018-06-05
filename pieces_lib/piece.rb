@@ -1,7 +1,7 @@
 class Pieces < Board
   
   CONDITION = lambda { |x,y| x.between?(0,7) && y.between?(0,7) }
-  attr_reader :color, :capture_moves, :x, :y, :position, :legal_moves
+  attr_reader :color, :x, :y, :position
   attr_accessor :check_move
 
   def initialize(x,y, color = 'w')
@@ -33,27 +33,15 @@ class Pieces < Board
   end
 
   def get_capture_moves(x, y)
-    if @@board[y][x] != " " && @@board[y][x].color != self.color
-      @capture_moves << [x,y]
-      return true
+    if @@board[y][x] != " "
+      if @@board[y][x].color != self.color
+        @capture_moves << [x,y]
+        return true
+      else
+        return true
+      end
     else
       return false
-    end
-  end
-
-  def check_move
-    @check_move = []
-    get_check_move
-    @check_move
-  end
-
-  def get_check_move
-    unless possible_moves.empty?
-      @possible_moves.each do |pos|
-        if @@selected.possible_moves.include? pos
-          @check_move << pos
-        end
-      end
     end
   end
 
@@ -87,6 +75,7 @@ class Pieces < Board
   end
 
   def move(position)
+    possible_moves
     x, y = convert_move(position)
     if @possible_moves.include? [x,y]
       @@board[@y][@x] = " "
@@ -95,6 +84,7 @@ class Pieces < Board
       @y = y
       @position = [x,y]
       @possible_moves = []
+      @@selected = nil
       print_board
     else
       return "INVALID MOVE(MV)"

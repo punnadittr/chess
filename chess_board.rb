@@ -2,6 +2,12 @@ require "colorize"
 # Create a chessboard and function to assign item to the board
 class Board
 
+  attr_reader :all_legal_moves
+
+  def all_legal_moves
+    @@all_legal_moves
+  end
+
   def selected
     @@selected
   end
@@ -70,8 +76,8 @@ class Board
         return "Invalid Selection"
       else
         if @@selected.class == King
-          print "Legal Moves: #{@@selected.legal_moves("after")}\n"
-          print "Capture Moves: #{@@selected.capture_moves("after")}\n"
+          print "Legal Moves: #{@@selected.king_legal_moves}\n"
+          print "Capture Moves: #{@@selected.king_capture_moves}\n"
         else
           print "Legal Moves: #{@@selected.legal_moves}\n"
           print "Capture Moves: #{@@selected.capture_moves}\n"
@@ -85,19 +91,32 @@ class Board
     end
   end
 
+  def find_all_legal_moves
+    @@all_legal_moves = []
+    @@board.each do |row|
+      row.each do |piece|
+        if piece.class == Pawn && piece.color != self.color
+          @@all_legal_moves << piece.possible_capture_moves
+        elsif piece != " " && piece.color != self.color
+          @@all_legal_moves << piece.legal_moves
+        end
+      end
+    end
+    @@all_legal_moves.flatten!(1)
+  end
+
+  # For pawns
+  def find_possible_capture_moves
+
+  end
+
   def colorize_spaces(piece, highlight, regular, capture, x, y)
     # Reversing y when printing
     converts = {7=>0,6=>1,5=>2,4=>3,3=>4,2=>5,1=>6,0=>7}
     # Empty space case
     if piece == " "
-      if @@selected.class == King
-        if @@selected.show_legal_moves.include?([x,converts[y]])
-          print_and_colorize(piece, highlight)
-        else
-          print_and_colorize(piece, regular)
-        end
       # If the space belongs to legal moves of the selected piece, highlight yellow
-      elsif !@@selected.nil? && (@@selected.legal_moves.include? [x, converts[y]])
+      if !@@selected.nil? && (@@selected.show_legal_moves.include? [x, converts[y]])
         print_and_colorize(piece, highlight)
       # If not then print regular color
       else
@@ -105,16 +124,7 @@ class Board
       end
     # Not empty case (piece exists)
     else 
-      if @@selected.class == King
-        if @@selected.show_capture_moves.include?(piece.position)
-          print_and_colorize(piece.display, capture)
-        elsif
-          piece == @@selected
-          print_and_colorize(piece.display, highlight)
-        else
-          print_and_colorize(piece.display, regular)
-        end
-      elsif !@@selected.nil? && (@@selected.capture_moves.include? piece.position)
+      if !@@selected.nil? && (@@selected.show_capture_moves.include? piece.position)
         print_and_colorize(piece.display, capture)
       elsif piece == @@selected
         print_and_colorize(piece.display, highlight)
@@ -156,7 +166,20 @@ require_relative "pieces_lib/knight"
 require_relative "pieces_lib/king"
 
 myboard = Board.new
-myboard.board[3][3] = King.new 3,3
-myboard.board[3][1] = Rook.new 1,3,'b'
-myboard.select 'd4'
+myboard.setup
+myboard.find_all_legal_moves
+myboard.select'b1'
+myboard.select'e2'
+myboard.selected.move 'e4'
+myboard.select 'e1'
+myboard.selected.move 'e2'
+myboard.select 'e2'
+myboard.selected.move 'f3'
+myboard.select 'f3'
+myboard.selected.move 'f4'
+myboard.select 'f4'
+myboard.selected.move 'f5'
+myboard.select 'f7'
+myboard.selected.move 'f6'
+myboard.select 'f5'
 myboard.print_board

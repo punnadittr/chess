@@ -29,6 +29,18 @@ class Pawn < Pieces
     return "\u265F" if @color == "b"
   end
 
+  def possible_capture_moves
+    @check_move = []
+    x = @x - 1
+    y = @y + 1 if self.color == "w"
+    y = @y - 1 if self.color == "b"
+    2.times do
+      @check_move << [x,y]
+      x += 2
+    end
+    @check_move
+  end
+
   def possible_moves
     @possible_moves = []
     @possible_moves = legal_moves + capture_moves + en_passant?
@@ -71,23 +83,7 @@ class Pawn < Pieces
     @en_passant
   end
 
-  # Return the moves that will put King in check in the next turn
-=begin
-  def check_move
-    return @check_move = [] if @@selected.nil?
-    x = @x - 1
-    y = @y + 1 if self.color == "w"
-    y = @y - 1 if self.color == "b"
-    if @@selected.class == King && @@selected.get_all_moves("legal", true) != nil
-      if @@selected.get_all_moves("legal", true).include? [x, y]
-        @check_move << [x, y]
-      end
-    end
-    @check_move
-  end
-=end
   def capture_moves
-    @check_move = []
     @capture_moves = []
     x = @x - 1
     y = @y + 1 if self.color == "w"
@@ -139,6 +135,7 @@ class Pawn < Pieces
         @two_steps = false
       end
       @first_move = false
+      @@selected = nil
       print_board
       promote("w") if @color == "w" && y == 7
       promote("b") if @color == "b" && y == 0
