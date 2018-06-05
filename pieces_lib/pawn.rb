@@ -10,7 +10,6 @@ class Pawn < Pieces
     @first_move = true
     @possible_moves = []
     @en_passant = []
-    @check_move = []
   end
 
   def promote(color)
@@ -30,15 +29,15 @@ class Pawn < Pieces
   end
 
   def possible_capture_moves
-    @check_move = []
+    check_move = []
     x = @x - 1
     y = @y + 1 if self.color == "w"
     y = @y - 1 if self.color == "b"
     2.times do
-      @check_move << [x,y]
+      check_move << [x,y]
       x += 2
     end
-    @check_move
+    check_move
   end
 
   def possible_moves

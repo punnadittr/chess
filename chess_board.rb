@@ -105,11 +105,6 @@ class Board
     @@all_legal_moves.flatten!(1)
   end
 
-  # For pawns
-  def find_possible_capture_moves
-
-  end
-
   def colorize_spaces(piece, highlight, regular, capture, x, y)
     # Reversing y when printing
     converts = {7=>0,6=>1,5=>2,4=>3,3=>4,2=>5,1=>6,0=>7}
@@ -167,7 +162,6 @@ require_relative "pieces_lib/king"
 
 myboard = Board.new
 myboard.setup
-myboard.find_all_legal_moves
 myboard.select'b1'
 myboard.select'e2'
 myboard.selected.move 'e4'
