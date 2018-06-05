@@ -1,5 +1,5 @@
-class Pawn < Board
-  attr_reader :possible_moves, :color, :x, :y, :two_steps, :legal_moves, :capture_moves, :position
+class Pawn < Pieces
+  attr_reader :color, :x, :y, :two_steps, :legal_moves, :capture_moves, :position
 
   def initialize(x,y, color = "w")
     @color = color
@@ -12,13 +12,39 @@ class Pawn < Board
     @en_passant = []
   end
 
-  def promote
-
+  def promote(color)
+    color = @color
+    puts "Please choose a new piece to replace (Q,B,R,N)"
+    piece = gets.chomp
+    @@board[@y][@x] = Queen.new(@x, @y, color) if piece == "Q"
+    @@board[@y][@x] = Bishop.new(@x, @y, color) if piece == "B"
+    @@board[@y][@x] = Rook.new(@x, @y, color) if piece == "R"
+    @@board[@y][@x] = Knight.new(@x, @y, color) if piece == "N"
+    @selected = @@board[@y][@x]
   end
 
   def display
     return "\u2659" if @color == "w"
     return "\u265F" if @color == "b"
+  end
+
+  def possible_capture_moves
+    check_move = []
+    x = @x - 1
+    y = @y + 1 if @color == "w"
+    y = @y - 1 if @color == "b"
+    2.times do
+      if CONDITION.call(x,y)
+        check_move << [x,y]
+        x += 2
+      end
+    end
+    check_move
+  end
+
+  def possible_moves
+    @possible_moves = []
+    @possible_moves = legal_moves + capture_moves + en_passant?
   end
 
   def legal_moves
@@ -89,8 +115,8 @@ class Pawn < Board
     end
   end
 
-  def move(x, y)
-    @possible_moves = @legal_moves + @capture_moves + @en_passant
+  def move(position)
+    x, y = convert_move(position)
     current_y = @y
     if @possible_moves.include? [x, y]
       # Replace the old space with " "
@@ -110,8 +136,10 @@ class Pawn < Board
         @two_steps = false
       end
       @first_move = false
-      @possible_moves = []
+      @@selected = nil
       print_board
+      promote("w") if @color == "w" && y == 7
+      promote("b") if @color == "b" && y == 0
     else
       "INVALID MOVE"
     end

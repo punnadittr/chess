@@ -1,84 +1,30 @@
-class Rook < Board
-
-  CONDITION1 = lambda { |pos| pos >= 0 }
-  CONDITION2 = lambda { |pos| pos <= 7 }
-  CONDITIONS = [CONDITION1,CONDITION2,CONDITION1,CONDITION2]
-  attr_reader :color, :capture_moves
-
-  def initialize(x,y, color = "w")
-    @color = color
-    @x = x
-    @y = y
-    @position = [x,y]
-    @possible_moves = []
-  end
+class Rook < Pieces
 
   def display
     return "\u2656" if @color == "w"
     return "\u265C" if @color == "b"
   end
 
-  def get_moves(mode,x,y)
-    if mode == "legal"
-      if @@board[y][x] == " "
-        @legal_moves << [x,y]
-        return false
-      end
-      return true
-    elsif mode == "capture"
-      if @@board[y][x] != " "
-        # Add the position to capture move if color is different
-        if @@board[y][x].color != self.color
-          @capture_moves << [x,y]
-          return true
-        # If the position has the piece with same color
-        else
-          return true
-        end
-      end
-      return false
-    end
-  end
-
-  def legal_moves(mode = "legal")
-    @possible_moves = []
-    @legal_moves = [] if mode == "legal"
+  def get_all_moves(mode = "legal")
     x1 = @x - 1
     x2 = @x + 1
     y1 = @y - 1
     y2 = @y + 1
-    lines = [x1,x2,y1,y2]
-    lines.each_with_index do |ord, i|
-      while CONDITIONS[i].call(ord)
-        if i < 2
-          break if get_moves(mode,ord, @y)
+    lines = [[x1,@y],[x2,@y],[@x,y1],[@x,y2]]
+    lines.each_with_index do |ords, i|
+      x = ords[0]
+      y = ords[1]
+      while CONDITION.call(x,y)
+        if mode == "legal"
+          break if get_legal_moves(x,y)
         else
-          break if get_moves(mode,@x, ord)
+          break if get_capture_moves(x,y)
         end
-        ord -= 1 if i.even?
-        ord += 1 if i.odd?
+        x -= 1 if i == 0
+        x += 1 if i == 1
+        y -= 1 if i == 2
+        y += 1 if i == 3
       end
-    end
-    @legal_moves
-  end
-
-  def capture_moves
-    @capture_moves = []
-    legal_moves("capture")
-  end
-
-  def move(x,y)
-    @possible_moves = @legal_moves + @capture_moves
-    if @possible_moves.include? [x,y]
-      @@board[@y][@x] = " "
-      @@board[y][x] = self
-      @x = x
-      @y = y
-      @position = [x,y]
-      @possible_moves = []
-      print_board
-    else
-      return "INVALID MOVE"
     end
   end
 end

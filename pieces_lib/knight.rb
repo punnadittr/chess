@@ -1,30 +1,18 @@
-class Knight < Board
-
-  CONDITION = lambda { |pos| pos <= 7 && pos >= 0 }
-  attr_reader :color
-  
-  def initialize(x,y, color = 'w')
-    @color = color
-    @x = x
-    @y = y
-    @position = [x,y]
-    @possible_moves = []
-    @legal_moves = []
-    @capture_moves = []
-  end
+class Knight < Pieces
 
   def display
     return "\u2658" if @color == 'w'
     return "\u265E" if @color == 'b'
   end
 
+  # Get one legal move of one position
   def get_legal_move(a,b)
     x = @x+a
     y = @y+b
     x2 = @x+b
     y2 = @y+a
     2.times do
-      if CONDITION.call(x) && CONDITION.call(y)
+      if CONDITION.call(x,y)
         if @@board[y][x] == " "
           @legal_moves << [x,y]
         elsif @@board[y][x].color != self.color
@@ -36,6 +24,7 @@ class Knight < Board
     end
   end
 
+  # Get all legal_moves of one position
   def legal_moves
     @capture_moves = []
     @legal_moves = []
@@ -50,18 +39,4 @@ class Knight < Board
     @capture_moves
   end
 
-  def move(x,y)
-    @possible_moves = @legal_moves + @capture_moves
-    if @possible_moves.include? [x,y]
-      @@board[@y][@x] = " "
-      @@board[y][x] = self
-      @x = x
-      @y = y
-      @position = [x,y]
-      @possible_moves = []
-      print_board
-    else
-      return "INVALID MOVE"
-    end
-  end
 end
