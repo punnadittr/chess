@@ -31,11 +31,13 @@ class Pawn < Pieces
   def possible_capture_moves
     check_move = []
     x = @x - 1
-    y = @y + 1 if self.color == "w"
-    y = @y - 1 if self.color == "b"
+    y = @y + 1 if @color == "w"
+    y = @y - 1 if @color == "b"
     2.times do
-      check_move << [x,y]
-      x += 2
+      if CONDITION.call(x,y)
+        check_move << [x,y]
+        x += 2
+      end
     end
     check_move
   end
