@@ -154,14 +154,18 @@ class Board
   end
 end
 
-require_relative "pieces_lib/piece"
-require_relative "pieces_lib/pawn"
-require_relative "pieces_lib/rook"
-require_relative "pieces_lib/bishop"
-require_relative "pieces_lib/queen"
-require_relative "pieces_lib/knight"
-require_relative "pieces_lib/king"
+require_relative "piece"
+require_relative "pawn"
+require_relative "rook"
+require_relative "bishop"
+require_relative "queen"
+require_relative "knight"
+require_relative "king"
 
 myboard = Board.new
-myboard.board[3][3] = King.new 3,3
-myboard.board[5][5] = Queen.new 5,5,'b'
+myboard.board[3][3] = King.new(3,3)
+myboard.board[5][5] = Bishop.new(5,5,'b')
+myboard.board[5][3] = Rook.new(3,5,'b')
+myboard.board[5][2] = Rook.new(2,5,'b')
+myboard.board[0][5] = Knight.new(5,0,'b')
+myboard.board[4][5] = Pawn.new(5,4,'b')
