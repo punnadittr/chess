@@ -163,9 +163,5 @@ require_relative "knight"
 require_relative "king"
 
 myboard = Board.new
-myboard.board[3][3] = King.new(3,3)
-myboard.board[5][5] = Bishop.new(5,5,'b')
-myboard.board[5][3] = Rook.new(3,5,'b')
-myboard.board[5][2] = Rook.new(2,5,'b')
-myboard.board[0][5] = Knight.new(5,0,'b')
-myboard.board[4][5] = Pawn.new(5,4,'b')
+myboard.board[0][4] = King.new(4,0)
+myboard.board[0][7] = Rook.new(7,0)

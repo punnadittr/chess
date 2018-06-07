@@ -24,33 +24,39 @@ class King < Pieces
     end
   end
 
-  def castling_move
+  def left_castling
+    castling?(-4, -1, 3)
+  end
+
+  def right_castling
+    castling?(3, 1, 2)
+  end
+
+  def castling?(i, k ,j)
+    piece = @@board[y][x+i]
+    space_counter = 0
+    return false if @moved || piece.class != Rook || piece.moved
+    x = @x + k
+    j.times do 
+      space_counter += 1 if @@board[y][x] == " "
+      x = x + k
+    end
+    if space_counter == j
+      true
+    else
+      false
+    end
+  end
+
+  def get_castling_moves
     @castling_moves = []
-    return false if @moved
-    right_spaces = []
-    left_spaces = []
-    x1 = @x + 1
-    x2 = @x - 1
-    y = @y
-    right_rook = @@board[y][x+3]
-    left_rook = @@board[y][x-4]
-    for i in 1..5 do
-      if i < 3
-        right_spaces << [true] if @@board[y][x1] == " "
-        x1 += 1
-      elsif i >= 3
-        left_spaces << [true] if @@board[y][x2] == " "
-        x2 -= 1
-      end
-      if right_spaces.size == 2 && right_rook.class == Rook && right_rook.moved == false
-        @legal_moves << [@x+2,@y] 
-        @castling_moves << [@x+2,@y] 
-      end
-      if left_spaces.size == 3 && left_rook.class == Rook && left_rook.moved == false
-        @legal_moves << [@x-3,@y] 
-        @castling_moves << [@x-3,@y] 
-      end
-      return true if !@castling_moves.empty?
+    if left_castling
+      @legal_moves << [@x+2,@y] 
+      @castling_moves << [@x+2,@y] 
+    end
+    if right_castling
+      @legal_moves << [@x-3,@y] 
+      @castling_moves << [@x-3,@y] 
     end
   end
 
