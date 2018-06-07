@@ -68,14 +68,14 @@ class King < Pieces
   end
 
   def king_legal_moves
-    find_all_legal_moves
+    find_possible_check_moves
     legal_moves
     get_castling_moves
     @legal_moves -= @@all_legal_moves
   end
   
   def king_capture_moves
-    find_all_legal_moves
+    find_possible_check_moves
     capture_moves
     @capture_moves -= @@all_legal_moves
   end

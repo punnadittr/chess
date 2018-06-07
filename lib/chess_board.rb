@@ -95,7 +95,7 @@ class Board
     end
   end
 
-  def find_all_legal_moves
+  def find_possible_check_moves
     @@all_legal_moves = []
     @@board.each do |row|
       row.each do |piece|
@@ -176,7 +176,7 @@ require_relative "bishop"
 require_relative "queen"
 require_relative "knight"
 require_relative "king"
-
+require_relative "chess_game"
 myboard = Board.new
 myboard.board[0][4] = King.new(4,0)
 myboard.board[0][0] = Rook.new(0,0)

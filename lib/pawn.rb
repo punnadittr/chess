@@ -115,6 +115,14 @@ class Pawn < Pieces
     end
   end
 
+  def two_steps?(y)
+    if @y - y == 2 || y - @y == 2
+      @two_steps = true
+    else
+      @two_steps = false
+    end
+  end
+
   def move(position)
     x, y = convert_move(position)
     current_y = @y
@@ -130,11 +138,7 @@ class Pawn < Pieces
       @x = x
       @y = y
       @position = [@x, @y]
-      if @y - current_y == 2 || current_y - @y == 2
-        @two_steps = true
-      else
-        @two_steps = false
-      end
+      two_steps?(current_y)
       @first_move = false
       @@selected = nil
       print_board

@@ -38,5 +38,4 @@ class Knight < Pieces
   def capture_moves
     @capture_moves
   end
-
 end
