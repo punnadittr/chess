@@ -35,9 +35,14 @@ class King < Pieces
   def castling?(i, k ,j)
     piece = @@board[y][x+i]
     space_counter = 0
-    return false if @moved || piece.class != Rook || piece.moved
+    all_capture_moves
+    if @moved || piece.class != Rook || piece.moved || 
+      @@all_capture_moves.include?(@position)
+      return false
+    end
     x = @x + k
-    j.times do 
+    j.times do
+      return false if @@all_legal_moves.include?([x,y])
       space_counter += 1 if @@board[y][x] == " "
       x = x + k
     end
@@ -50,19 +55,22 @@ class King < Pieces
 
   def get_castling_moves
     @castling_moves = []
-    if left_castling
-      @legal_moves << [@x+2,@y] 
-      @castling_moves << [@x+2,@y] 
-    end
+    @right_castling_move = []
+    @left_castling_move = []
     if right_castling
-      @legal_moves << [@x-3,@y] 
-      @castling_moves << [@x-3,@y] 
+      @legal_moves << [@x+2,@y] 
+      @right_castling_move << [@x+2,@y] 
+    end
+    if left_castling
+      @legal_moves << [@x-2,@y]
+      @left_castling_move << [@x-2,@y]
     end
   end
 
   def king_legal_moves
     find_all_legal_moves
     legal_moves
+    get_castling_moves
     @legal_moves -= @@all_legal_moves
   end
   
@@ -75,5 +83,40 @@ class King < Pieces
   def possible_moves
     @possible_moves = []
     @possible_moves = king_legal_moves + king_capture_moves
+  end
+
+  def move_rook_castling(x_before, x_after)
+    rook = @@board[@y][x_before]
+    @@board[@y][x_before] = " "
+    @@board[@y][x_after] = rook
+    new_rook = @@board[@y][x_after]
+    new_rook.x = x_after
+    new_rook.position = [x_after, @y]
+    new_rook.moved = true
+  end
+
+  def move(position)
+    possible_moves
+    x, y = convert_move(position)
+    if @left_castling_move.include?([x,y])
+      move_rook_castling(0,3)
+      @left_castling_move = []
+    elsif @right_castling_move.include?([x,y])
+      move_rook_castling(7,5)
+      @right_castling_move = []
+    end
+    if @possible_moves.include? [x,y]
+      @@board[@y][@x] = " "
+      @@board[y][x] = self
+      @x = x
+      @y = y
+      @position = [x,y]
+      @possible_moves = []
+      @@selected = nil
+      @moved = true
+      print_board
+    else
+      return "INVALID MOVE(MV)"
+    end
   end
 end

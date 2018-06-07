@@ -4,6 +4,10 @@ class Board
 
   attr_reader :all_legal_moves
 
+  def all_capture_moves
+    @@all_capture_moves
+  end
+
   def all_legal_moves
     @@all_legal_moves
   end
@@ -107,6 +111,17 @@ class Board
     @@all_legal_moves.flatten!(1)
   end
 
+  def all_capture_moves
+    @@all_capture_moves = []
+    @@board.each do |row|
+      row.each do |piece|
+        next if piece == " " || piece.color == self.color
+        @@all_capture_moves << piece.capture_moves
+      end
+    end
+    @@all_capture_moves.flatten!(1)
+  end
+
   def colorize_spaces(piece, highlight, regular, capture, x, y)
     # Reversing y when printing
     converts = {7=>0,6=>1,5=>2,4=>3,3=>4,2=>5,1=>6,0=>7}
@@ -164,4 +179,8 @@ require_relative "king"
 
 myboard = Board.new
 myboard.board[0][4] = King.new(4,0)
+myboard.board[0][0] = Rook.new(0,0)
 myboard.board[0][7] = Rook.new(7,0)
+myboard.board[3][1] = Rook.new(1,3,'b')
+myboard.select 'e1'
+#myboard.board[3][4] = Queen.new(4,3,'b')
