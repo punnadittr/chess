@@ -1,4 +1,4 @@
-class Pieces < Board
+class Pieces < Game
   
   CONDITION = lambda { |x,y| x.between?(0,7) && y.between?(0,7) }
 
@@ -76,18 +76,6 @@ class Pieces < Board
     @capture_moves
   end
 
-  def convert_move(position)
-    return "INVALID MOVE(CV)" if position.length > 2
-    input_codes = {'a'=>0,'b'=>1,'c'=>2,'d'=>3,'e'=>4,'f'=>5,'g'=>6,'h'=>7}
-    x = position[0]
-    y = (position[1].to_i) - 1
-    if input_codes.include? x
-      return input_codes[x], y
-    else
-      "INVALID MOVE(CV)"
-    end
-  end
-
   def move(position)
     possible_moves
     x, y = convert_move(position)
@@ -101,8 +89,9 @@ class Pieces < Board
       @@selected = nil
       @moved = true
       print_board
+      return true
     else
-      return "INVALID MOVE(MV)"
+      return false
     end
   end
 end

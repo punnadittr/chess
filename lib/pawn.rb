@@ -144,8 +144,9 @@ class Pawn < Pieces
       print_board
       promote("w") if @color == "w" && y == 7
       promote("b") if @color == "b" && y == 0
+      true
     else
-      "INVALID MOVE"
+      false
     end
   end
 end

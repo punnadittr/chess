@@ -2,7 +2,7 @@ require "colorize"
 # Create a chessboard and function to assign item to the board
 class Board
 
-  attr_reader :all_legal_moves, :w_king, :b_king
+  attr_reader :w_king, :b_king
 
   def checking_piece
     @@checking_piece
@@ -12,8 +12,8 @@ class Board
     @@all_capture_moves
   end
 
-  def all_legal_moves
-    @@all_legal_moves
+  def possible_check_moves
+    @@possible_check_moves
   end
 
   def selected
@@ -70,34 +70,8 @@ class Board
       row = 7
       color = 'b'
     end
+    @w_king = @@board[0][4]
     @b_king = @@board[7][4]
-  end
-
-  # input > ex. 'a5'
-  def select(position)
-    x = position[0]
-    y = (position[1].to_i) - 1
-    input_codes = {'a'=>0,'b'=>1,'c'=>2,'d'=>3,'e'=>4,'f'=>5,'g'=>6,'h'=>7}
-    if input_codes.include? x
-      @@selected = @@board[y][input_codes[x]]
-      if @@selected == ' '
-        @@selected = nil
-        return "Invalid Selection"
-      else
-        if @@selected.class == King
-          print "Legal Moves: #{@@selected.king_legal_moves}\n"
-          print "Capture Moves: #{@@selected.king_capture_moves}\n"
-        else
-          print "Legal Moves: #{@@selected.legal_moves}\n"
-          print "Capture Moves: #{@@selected.capture_moves}\n"
-          print "Possible Moves: #{@@selected.possible_moves}\n"
-          print "En Passant Moves: #{@@selected.en_passant?}\n" if @@selected.class == Pawn
-        end
-        return "Selected " + position
-      end
-    else
-      return "Invalid Selection"
-    end
   end
 
   def blocking_moves
@@ -125,9 +99,13 @@ class Board
     @blocking_moves
   end
 
+  # Returns the piece that is checking the king
   def checking_piece
-    @w_king = @@board[3][2]
-    king = @w_king
+    if @@checking_piece.color == 'b'
+      king = @w_king 
+    else
+      king = @b_king
+    end
     @@checking_piece = nil
     @@board.each do |row|
       row.each do |piece|
@@ -140,27 +118,39 @@ class Board
     @@checking_piece
   end
 
-  def find_possible_check_moves
+  # Legal moves for current player
+  def all_legal_moves
     @@all_legal_moves = []
     @@board.each do |row|
       row.each do |piece|
-        next if piece == " " || piece.color == self.color
-        if piece.class == Pawn
-          @@all_legal_moves << piece.possible_capture_moves
-        else
-          piece.capture_moves
-          @@all_legal_moves << piece.legal_moves << piece.check_move
-        end
+        next if piece == " " || piece.color != @turn
+        @@all_legal_moves << piece.legal_moves
       end
     end
     @@all_legal_moves.flatten!(1)
   end
 
-  def all_capture_moves
-    @@all_capture_moves = []
+  def find_possible_check_moves
+    @@possible_check_moves = []
     @@board.each do |row|
       row.each do |piece|
         next if piece == " " || piece.color == self.color
+        if piece.class == Pawn
+          @@possible_check_moves << piece.possible_capture_moves
+        else
+          piece.capture_moves
+          @@possible_check_moves << piece.legal_moves << piece.check_move
+        end
+      end
+    end
+    @@possible_check_moves.flatten!(1)
+  end
+
+  def all_capture_moves(color = self.color)
+    @@all_capture_moves = []
+    @@board.each do |row|
+      row.each do |piece|
+        next if piece == " " || piece.color == color
         @@all_capture_moves << piece.capture_moves
       end
     end
@@ -214,6 +204,7 @@ class Board
   end
 end
 
+require_relative "chess_game"
 require_relative "piece"
 require_relative "pawn"
 require_relative "rook"
@@ -221,9 +212,3 @@ require_relative "bishop"
 require_relative "queen"
 require_relative "knight"
 require_relative "king"
-require_relative "chess_game"
-myboard = Board.new
-myboard.board[3][2] = King.new(2,3)
-myboard.board[7][6] = Bishop.new(6,7,'b')
-myboard.checking_piece
-myboard.blocking_moves

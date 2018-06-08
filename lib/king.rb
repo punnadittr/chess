@@ -42,7 +42,7 @@ class King < Pieces
     end
     x = @x + k
     j.times do
-      return false if @@all_legal_moves.include?([x,y])
+      return false if @@possible_check_moves.include?([x,y])
       space_counter += 1 if @@board[y][x] == " "
       x = x + k
     end
@@ -71,13 +71,13 @@ class King < Pieces
     find_possible_check_moves
     legal_moves
     get_castling_moves
-    @legal_moves -= @@all_legal_moves
+    @legal_moves -= @@possible_check_moves
   end
   
   def king_capture_moves
     find_possible_check_moves
     capture_moves
-    @capture_moves -= @@all_legal_moves
+    @capture_moves -= @@possible_check_moves
   end
 
   def possible_moves
@@ -115,8 +115,9 @@ class King < Pieces
       @@selected = nil
       @moved = true
       print_board
+      true
     else
-      return "INVALID MOVE(MV)"
+      false
     end
   end
 end
