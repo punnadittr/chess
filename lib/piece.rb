@@ -1,6 +1,7 @@
 class Pieces < Board
   
   CONDITION = lambda { |x,y| x.between?(0,7) && y.between?(0,7) }
+
   attr_reader :color
   attr_accessor :check_move, :x, :y, :position, :moved
 

@@ -2,7 +2,11 @@ require "colorize"
 # Create a chessboard and function to assign item to the board
 class Board
 
-  attr_reader :all_legal_moves
+  attr_reader :all_legal_moves, :w_king, :b_king
+
+  def checking_piece
+    @@checking_piece
+  end
 
   def all_capture_moves
     @@all_capture_moves
@@ -66,6 +70,7 @@ class Board
       row = 7
       color = 'b'
     end
+    @b_king = @@board[7][4]
   end
 
   # input > ex. 'a5'
@@ -93,6 +98,46 @@ class Board
     else
       return "Invalid Selection"
     end
+  end
+
+  def blocking_moves
+    non_blockable_pieces = [Knight, Pawn]
+    return if non_blockable_pieces.include?(@@checking_piece.class)
+    @blocking_moves = []
+    if @@checking_piece.color == 'b'
+      king = @w_king 
+    else
+      king = @b_king
+    end
+    check_x = @@checking_piece.x
+    check_y = @@checking_piece.y
+    @@checking_piece.legal_moves.each do |position|
+      x_ord = position[0]
+      y_ord = position[1]
+      first_x = king.x < check_x ? king.x : check_x
+      second_x = king.x >= check_x ? king.x : check_x
+      first_y = king.y < check_y ? king.y : check_y
+      second_y = king.y >= check_y ? king.y : check_y
+      if (x_ord.between?(first_x, second_x)) && (y_ord.between?(first_y, second_y))
+        @blocking_moves << [x_ord,y_ord]
+      end
+    end
+    @blocking_moves
+  end
+
+  def checking_piece
+    @w_king = @@board[3][2]
+    king = @w_king
+    @@checking_piece = nil
+    @@board.each do |row|
+      row.each do |piece|
+        next if piece == " " || piece.color == king.color
+        if piece.capture_moves.include?(king.position)
+          @@checking_piece = piece
+        end
+      end
+    end
+    @@checking_piece
   end
 
   def find_possible_check_moves
@@ -178,9 +223,7 @@ require_relative "knight"
 require_relative "king"
 require_relative "chess_game"
 myboard = Board.new
-myboard.board[0][4] = King.new(4,0)
-myboard.board[0][0] = Rook.new(0,0)
-myboard.board[0][7] = Rook.new(7,0)
-myboard.board[3][1] = Rook.new(1,3,'b')
-myboard.select 'e1'
-#myboard.board[3][4] = Queen.new(4,3,'b')
+myboard.board[3][2] = King.new(2,3)
+myboard.board[7][6] = Bishop.new(6,7,'b')
+myboard.checking_piece
+myboard.blocking_moves
