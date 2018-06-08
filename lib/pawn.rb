@@ -12,6 +12,7 @@ class Pawn < Pieces
     @en_passant = []
   end
 
+  # Promote the pawn when reaching top (white) or bottom (black)
   def promote(color)
     color = @color
     puts "Please choose a new piece to replace (Q,B,R,N)"
@@ -28,6 +29,7 @@ class Pawn < Pieces
     return "\u265F" if @color == "b"
   end
 
+  # Mocking moves for determining king's legal moves
   def possible_capture_moves
     check_move = []
     x = @x - 1
@@ -42,11 +44,13 @@ class Pawn < Pieces
     check_move
   end
 
+  # Combine all possible moves of a pawn piece
   def possible_moves
     @possible_moves = []
     @possible_moves = legal_moves + capture_moves + en_passant?
   end
 
+  # Regular move (going forward one or two squares)
   def legal_moves
     @legal_moves = []
     # Different Y coordinates for black and white pieces (moving up and down)
@@ -68,6 +72,7 @@ class Pawn < Pieces
     @legal_moves
   end
 
+  # Special capture move when an enemy pawn moves two steps forward
   def en_passant?
     @en_passant = []
     x = @x + 1
@@ -84,6 +89,7 @@ class Pawn < Pieces
     @en_passant
   end
 
+  # Regular capture moves for pawns (diagonal capture)
   def capture_moves
     @capture_moves = []
     x = @x - 1
@@ -98,6 +104,7 @@ class Pawn < Pieces
     @capture_moves
   end
 
+  # Removing enemy piece via en_passant move
   def en_passant_removal
     en_moves = @en_passant.flatten
     current_x = @x
@@ -115,6 +122,7 @@ class Pawn < Pieces
     end
   end
 
+  # Used in combination with en_passant to determine if current pawn moves two steps
   def two_steps?(y)
     if @y - y == 2 || y - @y == 2
       @two_steps = true
@@ -123,17 +131,16 @@ class Pawn < Pieces
     end
   end
 
+  # Move the piece to the selected position, 
+  # can be legal moves, capture moves or en passant moves
   def move(position)
     x, y = convert_move(position)
     current_y = @y
     if @possible_moves.include? [x, y]
-      # Replace the old space with " "
       @@board[@y][@x] = " "
-      # Remove the piece accordingly to the en passant condition
       if @en_passant.include? [x, y]
         en_passant_removal
       end
-      # Replace " " with current pawn piece
       @@board[y][x] = self
       @x = x
       @y = y

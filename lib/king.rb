@@ -32,16 +32,19 @@ class King < Pieces
     castling?(3, 1, 2)
   end
 
+  # Check if the castling move is availble
   def castling?(i, k ,j)
     piece = @@board[y][x+i]
     space_counter = 0
     all_capture_moves
+    # Check if the king has been moved or if it's in check
     if @moved || piece.class != Rook || piece.moved || 
       @@all_capture_moves.include?(@position)
       return false
     end
     x = @x + k
     j.times do
+      # Check if the spaces will get the king in check
       return false if @@possible_check_moves.include?([x,y])
       space_counter += 1 if @@board[y][x] == " "
       x = x + k
@@ -53,6 +56,7 @@ class King < Pieces
     end
   end
 
+  # Add castling move to legal_moves
   def get_castling_moves
     @castling_moves = []
     @right_castling_move = []
@@ -67,6 +71,8 @@ class King < Pieces
     end
   end
 
+  # Determine the king's legal moves by checking other pieces' moves 
+  # The king cannot move into check
   def king_legal_moves
     find_possible_check_moves
     legal_moves
@@ -85,6 +91,7 @@ class King < Pieces
     @possible_moves = king_legal_moves + king_capture_moves
   end
 
+  # Move the rook if castling happens
   def move_rook_castling(x_before, x_after)
     rook = @@board[@y][x_before]
     @@board[@y][x_before] = " "
@@ -95,9 +102,7 @@ class King < Pieces
     new_rook.moved = true
   end
 
-  def move(position)
-    possible_moves
-    x, y = convert_move(position)
+  def move_as_castling(x,y)
     if @left_castling_move.include?([x,y])
       move_rook_castling(0,3)
       @left_castling_move = []
@@ -105,6 +110,12 @@ class King < Pieces
       move_rook_castling(7,5)
       @right_castling_move = []
     end
+  end
+
+  def move(position)
+    possible_moves
+    x, y = convert_move(position)
+    move_as_castling(x,y)
     if @possible_moves.include? [x,y]
       @@board[@y][@x] = " "
       @@board[y][x] = self

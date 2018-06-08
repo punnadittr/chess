@@ -7,6 +7,18 @@ class Game < Board
     @turn = "w"
   end
 
+  def possible_check_moves
+    @@possible_check_moves
+  end
+
+  def selected
+    @@selected
+  end
+
+  def checking_piece
+    @@checking_piece
+  end
+
   def alter(color)
     return "w" if color == "b"
     return "b" if color == "w"
@@ -66,6 +78,82 @@ class Game < Board
 
   end
 
+  def blocking_moves
+    non_blockable_pieces = [Knight, Pawn]
+    return if non_blockable_pieces.include?(@@checking_piece.class)
+    @blocking_moves = []
+    king = @w_king if @turn == "w"
+    king = @b_king if @turn == "b"
+    check_x = @@checking_piece.x
+    check_y = @@checking_piece.y
+    @@checking_piece.legal_moves.each do |position|
+      x_ord = position[0]
+      y_ord = position[1]
+      x1 = king.x < check_x ? king.x : check_x
+      x2 = king.x >= check_x ? king.x : check_x
+      y1 = king.y < check_y ? king.y : check_y
+      y2 = king.y >= check_y ? king.y : check_y
+      if x_ord.between?(x1,x2) && y_ord.between?(y1,y2)
+        @blocking_moves << [x_ord,y_ord]
+      end
+    end
+    @blocking_moves
+  end
+
+  # Returns the piece that is checking the king
+  def checking_piece
+    king = @w_king  if @turn == "w"
+    king = @b_king if @turn == "b"
+    @@checking_piece = nil
+    @@board.each do |row|
+      row.each do |piece|
+        next if piece == " " || piece.color == king.color
+        if piece.capture_moves.include?(king.position)
+          @@checking_piece = piece
+        end
+      end
+    end
+    @@checking_piece
+  end
+
+  # Legal moves for current player
+  def all_legal_moves
+    @@all_legal_moves = []
+    @@board.each do |row|
+      row.each do |piece|
+        next if piece == " " || piece.color != @turn
+        @@all_legal_moves << piece.legal_moves
+      end
+    end
+    @@all_legal_moves.flatten!(1)
+  end
+
+  def find_possible_check_moves
+    @@possible_check_moves = []
+    @@board.each do |row|
+      row.each do |piece|
+        next if piece == " " || piece.color == self.color
+        if piece.class == Pawn
+          @@possible_check_moves << piece.possible_capture_moves
+        else
+          piece.capture_moves
+          @@possible_check_moves << piece.legal_moves << piece.check_move
+        end
+      end
+    end
+    @@possible_check_moves.flatten!(1)
+  end
+
+  def all_capture_moves(color = self.color)
+    @@all_capture_moves = []
+    @@board.each do |row|
+      row.each do |piece|
+        next if piece == " " || piece.color == color
+        @@all_capture_moves << piece.capture_moves
+      end
+    end
+    @@all_capture_moves.flatten!(1)
+  end
   def switch_turn
     return @turn = "b" if @turn == "w"
     return @turn = "w" if @turn == "b"
