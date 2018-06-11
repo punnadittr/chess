@@ -154,6 +154,7 @@ class Game < Board
     end
     @@all_capture_moves.flatten!(1)
   end
+
   def switch_turn
     return @turn = "b" if @turn == "w"
     return @turn = "w" if @turn == "b"
@@ -161,7 +162,7 @@ class Game < Board
 
   def convert_move(position)
     return "INVALID INPUT(CV)" if position.length != 2
-    input_codes = {'a'=>0,'b'=>1,'c'=>2,'d'=>3,'e'=>4,'f'=>5,'g'=>6,'h'=>7}
+    input_codes = {"a"=>0, "b"=>1, "c"=>2, "d"=>3, "e"=>4, "f"=>5, "g"=>6, "h"=>7}
     x = position[0]
     y = (position[1].to_i) - 1
     if input_codes.include? x
