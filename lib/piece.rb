@@ -22,6 +22,14 @@ class Pieces < Game
     @legal_moves
   end
 
+  def assign_legal_moves=(moves)
+    @legal_moves = moves
+  end
+
+  def assign_capture_moves=(moves)
+    @capture_moves = moves
+  end
+
   def show_capture_moves
     @capture_moves
   end
@@ -60,7 +68,7 @@ class Pieces < Game
 
   def possible_moves
     @possible_moves = []
-    @possible_moves = legal_moves + capture_moves
+    @possible_moves = @legal_moves + @capture_moves
   end
 
   def legal_moves

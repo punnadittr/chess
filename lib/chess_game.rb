@@ -7,16 +7,8 @@ class Game < Board
     @turn = "w"
   end
 
-  def possible_check_moves
-    @@possible_check_moves
-  end
-
   def selected
     @@selected
-  end
-
-  def checking_piece
-    @@checking_piece
   end
 
   def alter(color)
@@ -24,11 +16,15 @@ class Game < Board
     return "b" if color == "w"
   end
 
+  def turn
+    @turn
+  end
+
   def in_check?
     if checking_piece.nil?
-      @checked = false
+      false
     else
-      @checked = true
+      true
     end
   end
 
@@ -36,78 +32,140 @@ class Game < Board
     board = Board.new
     board.setup
     print_board
-    puts "Welcome to Ruby Chess"
-    puts "White player always starts first"
-    while true
-      puts "#{@turn}'s turn"
-      user_selection = gets.chomp
-      until select(user_selection)
-        puts "INVALID SELECTION"
-        user_selection = gets.chomp
-      end
+    play_game
+  end
+
+  def game_over?
+    if checkmate? || stalemate?
+      true
+    else 
+      false
+    end
+  end
+
+  def play_game
+    while !game_over?
+      track_input
+    end
+  end
+
+  def track_input
+    puts "#{@turn}'s turn, Please select a piece"
+    user_input = gets.chomp
+    if user_input == "deselect"
+      deselect
+      puts "Deselected, please select a new piece"
+    elsif @@selected.nil?
+      select(user_input)
       print_board
-      puts "Where would you like to move?"
-      user_move = gets.chomp
-      until(@@selected.move(user_move))
-        puts "INVALID MOVE"
-        user_move = gets.chomp
-      end
+    elsif !@@selected.nil?
+      @@selected.move(user_input)
       switch_turn
+    elsif user_input == "save"
+      save
+    elsif user_input == "load"
+      load
+    else
+      puts "INVALID INPUT"
     end
   end
 
   def deselect
-    
+    @@selected = nil
+    print_board
   end
 
   def checkmate?
-    king = @w_king if @turn == "w"
-    king = @b_king if @turn == "b"
+    king = @@w_king if @turn == "w"
+    king = @@b_king if @turn == "b"
     if !in_check?
       return false
     else
-      unless all_legal_moves.include?(blocking_moves) || 
-        all_capture_moves(alter(@turn)).include?(@@checking_piece.position) ||
-        king.king_legal_moves.empty? == true
+      if (all_legal_moves & blocking_moves).empty? &&
+        !all_capture_moves(alter(@turn)).include?(@@checking_piece.position) &&
+        king.king_legal_moves.empty?
         return true
       end
     end
+    false
   end
 
   def stalemate?
-
+    return true if (all_legal_moves.empty?) && (all_capture_moves(alter(@turn)).empty?)
+    false
   end
 
-  def blocking_moves
-    non_blockable_pieces = [Knight, Pawn]
-    return if non_blockable_pieces.include?(@@checking_piece.class)
-    @blocking_moves = []
-    king = @w_king if @turn == "w"
-    king = @b_king if @turn == "b"
-    check_x = @@checking_piece.x
-    check_y = @@checking_piece.y
-    @@checking_piece.legal_moves.each do |position|
-      x_ord = position[0]
-      y_ord = position[1]
-      x1 = king.x < check_x ? king.x : check_x
-      x2 = king.x >= check_x ? king.x : check_x
-      y1 = king.y < check_y ? king.y : check_y
-      y2 = king.y >= check_y ? king.y : check_y
-      if x_ord.between?(x1,x2) && y_ord.between?(y1,y2)
-        @blocking_moves << [x_ord,y_ord]
+  def blocking_moves_diagonal(king, check_piece, x_result, y_result)
+    x = check_piece.x
+    y = check_piece.y
+    if x_result.positive?
+      if y_result.negative?
+        until x+1 == king.x || y-1 == king.y
+          @blocking_moves << [x+1, y-1]
+          x += 1
+          y -= 1
+        end
+      else
+        until x+1 == king.x || y+1 == king.y
+          @blocking_moves << [x+1,y+1]
+          x += 1
+          y += 1
+        end
+      end
+    elsif x_result.negative?
+      if y_result.negative?
+        until x-1 == king.x || y-1 == king.y
+          @blocking_moves << [x-1, y-1]
+          x -= 1
+          y -= 1
+        end
+      else
+        until x-1 == king.x || y+1 == king.y
+          @blocking_moves << [x-1,y+1]
+          x -= 1
+          y += 1
+        end
       end
     end
     @blocking_moves
   end
 
+  def blocking_moves
+    @blocking_moves = []
+    non_blockable_pieces = [Knight, Pawn]
+    return @blocking_moves if non_blockable_pieces.include?(@@checking_piece.class)
+    king = @@w_king if @turn == "w"
+    king = @@b_king if @turn == "b"
+    check = @@checking_piece
+    x_result = king.x - check.x
+    y_result = king.y - check.y
+    if x_result.zero? || y_result.zero?
+      @@checking_piece.legal_moves.each do |position|
+        x_ord = position[0]
+        y_ord = position[1]
+        x1 = king.x < check.x ? king.x : check.x
+        x2 = king.x >= check.x ? king.x : check.x
+        y1 = king.y < check.y ? king.y : check.y
+        y2 = king.y >= check.y ? king.y : check.y
+        if (x_ord.between?(x1,x2)) && (y_ord.between?(y1,y2))
+          @blocking_moves << [x_ord,y_ord]
+        end
+      end
+      @blocking_moves
+    else
+      blocking_moves_diagonal(king, check, x_result, y_result)
+    end
+  end
+
   # Returns the piece that is checking the king
   def checking_piece
-    king = @w_king  if @turn == "w"
-    king = @b_king if @turn == "b"
+    king = @@w_king if @turn == "w"
+    king = @@b_king if @turn == "b"
     @@checking_piece = nil
     @@board.each do |row|
       row.each do |piece|
         next if piece == " " || piece.color == king.color
+        piece.legal_moves
         if piece.capture_moves.include?(king.position)
           @@checking_piece = piece
         end
@@ -122,7 +180,11 @@ class Game < Board
     @@board.each do |row|
       row.each do |piece|
         next if piece == " " || piece.color != @turn
-        @@all_legal_moves << piece.legal_moves
+        if piece.class == King
+          @@all_legal_moves << piece.king_legal_moves
+        else
+          @@all_legal_moves << piece.legal_moves
+        end
       end
     end
     @@all_legal_moves.flatten!(1)
@@ -132,16 +194,21 @@ class Game < Board
     @@possible_check_moves = []
     @@board.each do |row|
       row.each do |piece|
-        next if piece == " " || piece.color == self.color
-        if piece.class == Pawn
-          @@possible_check_moves << piece.possible_capture_moves
-        else
-          piece.capture_moves
-          @@possible_check_moves << piece.legal_moves << piece.check_move
+        if @@selected != nil
+          if piece.class == Pawn && piece.color != @@selected.color
+            @@possible_check_moves << piece.possible_capture_moves
+          elsif piece != " " && piece.color != @@selected.color
+            piece.capture_moves
+            @@possible_check_moves << piece.legal_moves << piece.check_move
+          end
         end
       end
     end
-    @@possible_check_moves.flatten!(1)
+    if @@possible_check_moves.empty?
+      []
+    else
+      @@possible_check_moves.flatten!(1)
+    end
   end
 
   def all_capture_moves(color = self.color)
@@ -149,10 +216,18 @@ class Game < Board
     @@board.each do |row|
       row.each do |piece|
         next if piece == " " || piece.color == color
-        @@all_capture_moves << piece.capture_moves
+        if piece.class == King
+          @@all_capture_moves << piece.king_capture_moves
+        else
+          @@all_capture_moves << piece.capture_moves
+        end
       end
     end
-    @@all_capture_moves.flatten!(1)
+    if @@all_capture_moves.empty?
+      []
+    else
+      @@all_capture_moves.flatten!(1)
+    end
   end
 
   def switch_turn
@@ -180,7 +255,20 @@ class Game < Board
       @@selected = nil
       return false
     else
-      if @@selected.class == King
+      if (in_check? && @@selected.class != King)
+        if !(@@selected.legal_moves & blocking_moves).empty?
+          @@selected.assign_legal_moves = (@@selected.legal_moves & blocking_moves)
+          @@selected.assign_capture_moves = []
+          @@selected.possible_moves
+        elsif !(@@selected.capture_moves.flatten & @@checking_piece.position).empty?
+          @@selected.assign_capture_moves = [@@checking_piece.position]
+          @@selected.assign_legal_moves = []
+          @@selected.possible_moves
+        else
+          @@selected = nil
+          return false
+        end
+      elsif @@selected.class == King
         @@selected.king_legal_moves
         @@selected.king_capture_moves
       else

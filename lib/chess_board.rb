@@ -54,8 +54,8 @@ class Board
       row = 7
       color = 'b'
     end
-    @w_king = @@board[0][4]
-    @b_king = @@board[7][4]
+    @@w_king = @@board[0][4]
+    @@b_king = @@board[7][4]
   end
 
   def colorize_spaces(piece, highlight, regular, capture, x, y)
@@ -113,3 +113,6 @@ require_relative "bishop"
 require_relative "queen"
 require_relative "knight"
 require_relative "king"
+
+game = Game.new
+board = Board.new
