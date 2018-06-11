@@ -13,6 +13,7 @@ class Knight < Pieces
     y2 = @y+a
     2.times do
       if CONDITION.call(x,y)
+        @check_move << [x,y]
         if @@board[y][x] == " "
           @legal_moves << [x,y]
         elsif @@board[y][x].color != self.color
@@ -26,6 +27,7 @@ class Knight < Pieces
 
   # Get all legal_moves of current position
   def legal_moves
+    @check_move = []
     @capture_moves = []
     @legal_moves = []
     get_legal_move(-1, -2)
