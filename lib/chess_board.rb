@@ -116,7 +116,3 @@ require_relative "king"
 
 game = Game.new
 board = Board.new
-game.board[0][4] = King.new 4,0
-@@w_king = game.board[0][4]
-game.board[3][7] = Queen.new 7,3,'b'
-game.board[0][5] = Rook.new 5,0

@@ -15,6 +15,7 @@ class King < Pieces
       x = ords[0]
       y = ords[1]
       if CONDITION.call(x,y)
+        @check_move << [x,y]
         if mode == "legal"
           get_legal_moves(x, y)
         else
@@ -36,16 +37,15 @@ class King < Pieces
   def castling?(i, k ,j)
     piece = @@board[y][x+i]
     space_counter = 0
-    all_capture_moves
     # Check if the king has been moved or if it's in check
     if @moved || piece.class != Rook || piece.moved || 
-      @@all_capture_moves.include?(@position)
+      all_capture_moves.include?(@position)
       return false
     end
     x = @x + k
     j.times do
       # Check if the spaces will get the king in check
-      return false if @@possible_check_moves.include?([x,y])
+      return false if find_possible_check_moves.include?([x,y])
       space_counter += 1 if @@board[y][x] == " "
       x = x + k
     end
@@ -62,28 +62,27 @@ class King < Pieces
     @right_castling_move = []
     @left_castling_move = []
     if right_castling
-      @legal_moves << [@x+2,@y] 
       @right_castling_move << [@x+2,@y] 
+      show_legal_moves << [@x+2,@y]
     end
     if left_castling
-      @legal_moves << [@x-2,@y]
       @left_castling_move << [@x-2,@y]
+      show_legal_moves << [@x-2,@y]
     end
+    @legal_moves
   end
 
   # Determine the king's legal moves by checking other pieces' moves 
   # The king cannot move into check
   def king_legal_moves
-    find_possible_check_moves
     legal_moves
     get_castling_moves
-    @legal_moves -= @@possible_check_moves
+    @legal_moves -= find_possible_check_moves
   end
   
   def king_capture_moves
-    find_possible_check_moves
     capture_moves
-    @capture_moves -= @@possible_check_moves
+    @capture_moves -= find_possible_check_moves
   end
 
   def possible_moves
