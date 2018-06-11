@@ -1,6 +1,9 @@
 # defines game logic / determines game over / get user_input
 class Game < Board
 
+  PLAYER_CASE = lambda { |x| x == @turn }
+  ENEMY_CASE = lambda { |x| x != @turn }
+
   def initialize
     @checked = false
     @game_over = false
@@ -75,24 +78,42 @@ class Game < Board
     print_board
   end
 
+  def set_king
+    return @@w_king if @turn == "w"
+    return @@b_king if @turn == "b"
+  end
+
+  def no_blocking_moves?
+    (all_legal_moves & blocking_moves).empty?
+  end
+
+  def no_defending_moves?
+    (all_capture_moves.include?(checking_piece.position)).empty?
+  end
+
+  def no_legal_moves?(king)
+    king.king_legal_moves.empty?
+  end
+
   def checkmate?
-    king = @@w_king if @turn == "w"
-    king = @@b_king if @turn == "b"
+    king = set_king
     if !in_check?
       return false
     else
-      if (all_legal_moves & blocking_moves).empty? &&
-        !all_capture_moves(alter(@turn)).include?(@@checking_piece.position) &&
-        king.king_legal_moves.empty?
+      if no_blocking_moves? && no_defending_moves? && no_legal_moves?(king)
         return true
+      else
+        false
       end
     end
-    false
   end
 
   def stalemate?
-    return true if (all_legal_moves.empty?) && (all_capture_moves(alter(@turn)).empty?)
-    false
+    if all_legal_moves.empty? && all_capture_moves.empty?
+      true
+    else
+      false
+    end
   end
 
   def blocking_moves_diagonal(king, check_piece, x_result, y_result)
@@ -174,20 +195,43 @@ class Game < Board
     @@checking_piece
   end
 
-  # Legal moves for current player
-  def all_legal_moves
-    @@all_legal_moves = []
+  def for_each_piece
     @@board.each do |row|
-      row.each do |piece|
-        next if piece == " " || piece.color != @turn
-        if piece.class == King
-          @@all_legal_moves << piece.king_legal_moves
-        else
-          @@all_legal_moves << piece.legal_moves
-        end
+      row.each do |element|
+        yield element
       end
     end
-    @@all_legal_moves.flatten!(1)
+  end
+
+  # Legal moves for current player
+  def all_legal_moves
+    all_moves("legal", PLAYER_CASE)
+  end
+
+  def enemy_capture_moves
+   all_moves("capture", ENEMY_CASE)
+  end
+
+  def all_capture_moves
+    all_moves("capture", PLAYER_CASE)
+  end
+
+  def all_moves(mode, proc)
+    @keep = []
+    for_each_piece do |piece|
+      if piece.class == King && proc.call(piece.color)
+        @keep << piece.king_legal_moves if mode == "legal"
+        @keep << piece.king_capture_moves if mode == "capture"
+        print "#{@keep}\n"
+      elsif piece != " " && proc.call(piece.color)
+        @keep << piece.legal_moves if mode == "legal"
+        @keep << piece.capture_moves if mode == "capture"
+        print "#{@keep}\n"
+      end
+      print "WOW NO PIECE\n"
+    end
+    return @keep if @keep.empty?
+    @keep.flatten!(1)
   end
 
   def find_possible_check_moves
@@ -208,25 +252,6 @@ class Game < Board
       []
     else
       @@possible_check_moves.flatten!(1)
-    end
-  end
-
-  def all_capture_moves(color = self.color)
-    @@all_capture_moves = []
-    @@board.each do |row|
-      row.each do |piece|
-        next if piece == " " || piece.color == color
-        if piece.class == King
-          @@all_capture_moves << piece.king_capture_moves
-        else
-          @@all_capture_moves << piece.capture_moves
-        end
-      end
-    end
-    if @@all_capture_moves.empty?
-      []
-    else
-      @@all_capture_moves.flatten!(1)
     end
   end
 

@@ -39,7 +39,7 @@ class King < Pieces
     space_counter = 0
     # Check if the king has been moved or if it's in check
     if @moved || piece.class != Rook || piece.moved || 
-      all_capture_moves.include?(@position)
+      enemy_capture_moves.include?(@position)
       return false
     end
     x = @x + k
