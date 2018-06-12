@@ -11,17 +11,20 @@ class Game < Board
     @@selected
   end
 
-  def alter(color)
-    return "w" if color == "b"
-    return "b" if color == "w"
-  end
-
   def turn
     @turn
   end
 
-  def in_check?
+  def enemy_in_check?
     if checking_piece.nil?
+      false
+    else
+      true
+    end
+  end
+
+  def in_check?
+    if enemy_checking_piece.nil?
       false
     else
       true
@@ -47,6 +50,8 @@ class Game < Board
     while !game_over?
       track_input
     end
+    puts "BLACK WINS" if turn == "b"
+    puts "WHITE WINS" if turn == "w"
   end
 
   def track_input
@@ -59,7 +64,9 @@ class Game < Board
       select(user_input)
       print_board
     elsif !@@selected.nil?
-      switch_turn if @@selected.move(user_input)
+      if @@selected.move(user_input) && !game_over?
+        switch_turn
+      end
     elsif user_input == "save"
       save
     elsif user_input == "load"
@@ -74,17 +81,22 @@ class Game < Board
     print_board
   end
 
+  def set_alter_king
+    return @@b_king if @turn == "w"
+    return @@w_king if @turn == "b"
+  end
+
   def set_king
     return @@w_king if @turn == "w"
     return @@b_king if @turn == "b"
   end
 
   def no_blocking_moves?
-    (all_legal_moves & blocking_moves).empty?
+    (enemy_legal_moves & blocking_moves).empty?
   end
 
   def no_defending_moves?
-    !all_capture_moves.include?(checking_piece.position)
+    !enemy_capture_moves.include?(checking_piece.position)
   end
 
   def no_legal_moves?(king)
@@ -92,8 +104,8 @@ class Game < Board
   end
 
   def checkmate?
-    king = set_king
-    if !in_check?
+    king = set_alter_king
+    if !enemy_in_check?
       false
     else
       if no_blocking_moves? && no_defending_moves? && no_legal_moves?(king)
@@ -105,7 +117,7 @@ class Game < Board
   end
 
   def stalemate?
-    if all_legal_moves.empty? && all_capture_moves.empty?
+    if enemy_legal_moves.empty? && all_capture_moves.empty?
       true
     else
       false
@@ -113,7 +125,7 @@ class Game < Board
   end
 
   def non_blockable_check?
-    checking_piece.class == Knight || checking_piece.class == Pawn
+    enemy_checking_piece.class == Knight || enemy_checking_piece.class == Pawn
   end
 
   def find_min_max(num1, num2)
@@ -160,9 +172,9 @@ class Game < Board
 
   def blocking_moves
     @blocking_moves = []
-    return [] if non_blockable_check?
+    return [] if non_blockable_check? || enemy_checking_piece.nil?
     king = set_king
-    check = checking_piece
+    check = enemy_checking_piece
     x_diff = king.x - check.x
     y_diff = king.y - check.y
     if x_diff.zero? || y_diff.zero?
@@ -172,18 +184,28 @@ class Game < Board
     end
   end
 
+  def enemy_checking_piece
+    king = set_king
+    get_checking_piece(king) { |x| x != turn }
+  end
+
   # Returns the piece that is checking the king
   def checking_piece
-    king = set_king
-    checking_piece = nil
+    king = set_alter_king
+    get_checking_piece(king) { |x| x == turn }
+  end
+
+  def get_checking_piece(king, &block)
+    checking = nil
     for_each_piece do |piece|
-      next if piece == " " || piece.color == king.color
-      piece.legal_moves
-      if piece.capture_moves.include?(king.position)
-        checking_piece = piece
+      if piece != " " && block.call(piece.color)
+        piece.legal_moves
+        if piece.capture_moves.include?(king.position)
+          checking = piece
+        end
       end
     end
-    checking_piece
+    checking
   end
 
   def for_each_piece
@@ -207,6 +229,10 @@ class Game < Board
     end
     return keep if keep.empty?
     keep.flatten!(1)
+  end
+
+  def enemy_legal_moves
+    all_moves("legal") { |x| x != turn }
   end
 
   # Legal moves for current player
@@ -264,7 +290,7 @@ class Game < Board
   end
 
   def any_capture_moves?
-    !(@@selected.capture_moves.flatten & checking_piece.position).empty?
+    !(@@selected.capture_moves.flatten & enemy_checking_piece.position).empty?
   end
 
   def assign_new_moves(moves_1, moves_2)
@@ -297,7 +323,7 @@ class Game < Board
         if any_blocking_moves?
           assign_new_moves(@@selected.legal_moves & blocking_moves, [])
         elsif any_capture_moves?
-          assign_new_moves([],[checking_piece.position])
+          assign_new_moves([],[enemy_checking_piece.position])
         else
           @@selected = nil
           return false

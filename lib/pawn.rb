@@ -17,11 +17,10 @@ class Pawn < Pieces
     color = @color
     puts "Please choose a new piece to replace (Q,B,R,N)"
     piece = gets.chomp
-    @@board[@y][@x] = Queen.new(@x, @y, color) if piece == "Q"
-    @@board[@y][@x] = Bishop.new(@x, @y, color) if piece == "B"
-    @@board[@y][@x] = Rook.new(@x, @y, color) if piece == "R"
-    @@board[@y][@x] = Knight.new(@x, @y, color) if piece == "N"
-    @selected = @@board[@y][@x]
+    @@board[@y][@x] = Queen.new(@x, @y, color) if piece == "q"
+    @@board[@y][@x] = Bishop.new(@x, @y, color) if piece == "b"
+    @@board[@y][@x] = Rook.new(@x, @y, color) if piece == "r"
+    @@board[@y][@x] = Knight.new(@x, @y, color) if piece == "n"
   end
 
   def display

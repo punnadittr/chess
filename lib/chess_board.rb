@@ -113,10 +113,3 @@ require_relative "bishop"
 require_relative "queen"
 require_relative "knight"
 require_relative "king"
-
-game = Game.new
-board = Board.new
-game.board[0][4] = King.new 4,0
-@@w_king = game.board[0][4]
-game.board[1][2] = Pawn.new 2,1
-game.board[3][4] = Rook.new 4,3,'b'
