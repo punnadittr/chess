@@ -45,7 +45,7 @@ class King < Pieces
     x = @x + k
     j.times do
       # Check if the spaces will get the king in check
-      return false if find_possible_check_moves.include?([x,y])
+      return false if enemy_possible_check_moves.include?([x,y])
       space_counter += 1 if @@board[y][x] == " "
       x = x + k
     end
@@ -77,12 +77,12 @@ class King < Pieces
   def king_legal_moves
     legal_moves
     get_castling_moves
-    @legal_moves -= find_possible_check_moves
+    @legal_moves -= enemy_possible_check_moves
   end
   
   def king_capture_moves
     capture_moves
-    @capture_moves -= find_possible_check_moves
+    @capture_moves -= enemy_possible_check_moves
   end
 
   def possible_moves

@@ -200,19 +200,6 @@ class Game < Board
     end
   end
 
-  # Legal moves for current player
-  def all_legal_moves
-    all_moves("legal") { |x| x == turn }
-  end
-
-  def enemy_capture_moves
-   all_moves("capture") { |x| x != turn }
-  end
-
-  def all_capture_moves
-    all_moves("capture") { |x| x == turn }
-  end
-
   def all_moves(mode, &block)
     keep = []
     for_each_piece do |piece|
@@ -228,25 +215,36 @@ class Game < Board
     keep.flatten!(1)
   end
 
-  def find_possible_check_moves
-    @@possible_check_moves = []
-    @@board.each do |row|
-      row.each do |piece|
-        if @@selected != nil
-          if piece.class == Pawn && piece.color != @@selected.color
-            @@possible_check_moves << piece.possible_capture_moves
-          elsif piece != " " && piece.color != @@selected.color
-            piece.capture_moves
-            @@possible_check_moves << piece.legal_moves << piece.check_move
-          end
+  # Legal moves for current player
+  def all_legal_moves
+    all_moves("legal") { |x| x == turn }
+  end
+
+  # All capture moves of enemy
+  def enemy_capture_moves
+   all_moves("capture") { |x| x != turn }
+  end
+
+  # All capture moves of current player
+  def all_capture_moves
+    all_moves("capture") { |x| x == turn }
+  end
+
+  # Always called upon a King piece
+  def enemy_possible_check_moves
+    keep = []
+    for_each_piece do
+      unless @@selected.class != King || piece.color == @@selected.color
+        if piece.class == Pawn
+          keep << piece.possible_capture_moves
+        elsif piece != " "
+          piece.capture_moves
+          keep << piece.legal_moves << piece.check_move
         end
       end
     end
-    if @@possible_check_moves.empty?
-      []
-    else
-      @@possible_check_moves.flatten!(1)
-    end
+    return keep if keep.empty?
+    keep.flatten!(1)
   end
 
   def switch_turn
