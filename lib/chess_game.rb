@@ -1,9 +1,6 @@
 # defines game logic / determines game over / get user_input
 class Game < Board
 
-  PLAYER_CASE = lambda { |x| x == @turn }
-  ENEMY_CASE = lambda { |x| x != @turn }
-
   def initialize
     @checked = false
     @game_over = false
@@ -205,33 +202,30 @@ class Game < Board
 
   # Legal moves for current player
   def all_legal_moves
-    all_moves("legal", PLAYER_CASE)
+    all_moves("legal") { |x| x == turn }
   end
 
   def enemy_capture_moves
-   all_moves("capture", ENEMY_CASE)
+   all_moves("capture") { |x| x != turn }
   end
 
   def all_capture_moves
-    all_moves("capture", PLAYER_CASE)
+    all_moves("capture") { |x| x == turn }
   end
 
-  def all_moves(mode, proc)
-    @keep = []
+  def all_moves(mode, &block)
+    keep = []
     for_each_piece do |piece|
-      if piece.class == King && proc.call(piece.color)
-        @keep << piece.king_legal_moves if mode == "legal"
-        @keep << piece.king_capture_moves if mode == "capture"
-        print "#{@keep}\n"
-      elsif piece != " " && proc.call(piece.color)
-        @keep << piece.legal_moves if mode == "legal"
-        @keep << piece.capture_moves if mode == "capture"
-        print "#{@keep}\n"
+      if piece.class == King && block.call(piece.color)
+        keep << piece.king_legal_moves if mode == "legal"
+        keep << piece.king_capture_moves if mode == "capture"
+      elsif piece != " " && block.call(piece.color)
+        keep << piece.legal_moves if mode == "legal"
+        keep << piece.capture_moves if mode == "capture"
       end
-      print "WOW NO PIECE\n"
     end
-    return @keep if @keep.empty?
-    @keep.flatten!(1)
+    return keep if keep.empty?
+    keep.flatten!(1)
   end
 
   def find_possible_check_moves

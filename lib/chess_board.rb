@@ -116,3 +116,4 @@ require_relative "king"
 
 game = Game.new
 board = Board.new
+game.start_game
