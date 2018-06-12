@@ -97,9 +97,9 @@ class Pieces < Game
       @@selected = nil
       @moved = true
       print_board
-      return true
+      true
     else
-      return false
+      false
     end
   end
 end

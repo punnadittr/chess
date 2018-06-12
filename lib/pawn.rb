@@ -1,5 +1,5 @@
 class Pawn < Pieces
-  attr_reader :color, :x, :y, :two_steps, :legal_moves, :capture_moves, :position
+  attr_reader :two_steps
 
   def initialize(x,y, color = "w")
     @color = color
@@ -47,7 +47,7 @@ class Pawn < Pieces
   # Combine all possible moves of a pawn piece
   def possible_moves
     @possible_moves = []
-    @possible_moves = legal_moves + capture_moves + en_passant?
+    @possible_moves = @legal_moves + @capture_moves + en_passant?
   end
 
   # Regular move (going forward one or two squares)

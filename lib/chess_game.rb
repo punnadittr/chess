@@ -59,8 +59,7 @@ class Game < Board
       select(user_input)
       print_board
     elsif !@@selected.nil?
-      @@selected.move(user_input)
-      switch_turn
+      switch_turn if @@selected.move(user_input)
     elsif user_input == "save"
       save
     elsif user_input == "load"
@@ -85,7 +84,7 @@ class Game < Board
   end
 
   def no_defending_moves?
-    (all_capture_moves.include?(checking_piece.position)).empty?
+    !all_capture_moves.include?(checking_piece.position)
   end
 
   def no_legal_moves?(king)
@@ -95,10 +94,10 @@ class Game < Board
   def checkmate?
     king = set_king
     if !in_check?
-      return false
+      false
     else
       if no_blocking_moves? && no_defending_moves? && no_legal_moves?(king)
-        return true
+        true
       else
         false
       end
@@ -113,35 +112,46 @@ class Game < Board
     end
   end
 
-  def blocking_moves_diagonal(king, check_piece, x_result, y_result)
-    x = check_piece.x
-    y = check_piece.y
-    if x_result.positive?
-      if y_result.negative?
-        until x+1 == king.x || y-1 == king.y
-          @blocking_moves << [x+1, y-1]
-          x += 1
-          y -= 1
-        end
-      else
-        until x+1 == king.x || y+1 == king.y
-          @blocking_moves << [x+1,y+1]
-          x += 1
-          y += 1
-        end
+  def non_blockable_check?
+    checking_piece.class == Knight || checking_piece.class == Pawn
+  end
+
+  def find_min_max(num1, num2)
+    min = [num1, num2].min
+    max = [num1, num2].max
+    return min, max
+  end
+
+  def blocking_moves_vert_hor(king, check)
+    check.legal_moves.each do |position|
+      x_ord = position[0]
+      y_ord = position[1]
+      x1, x2 = find_min_max(king.x, check.x)
+      y1, y2 = find_min_max(king.y, check.y)
+      if (x_ord.between?(x1,x2)) && (y_ord.between?(y1,y2))
+        @blocking_moves << [x_ord,y_ord]
       end
-    elsif x_result.negative?
-      if y_result.negative?
-        until x-1 == king.x || y-1 == king.y
-          @blocking_moves << [x-1, y-1]
-          x -= 1
-          y -= 1
-        end
-      else
-        until x-1 == king.x || y+1 == king.y
-          @blocking_moves << [x-1,y+1]
-          x -= 1
-          y += 1
+    end
+    @blocking_moves
+  end
+
+  def blocking_moves_diagonal(king, check_piece, x_diff, y_diff)
+    conditions = [
+      [x_diff.negative?, y_diff.positive?],[x_diff.negative?, y_diff.negative?],
+      [x_diff.positive?, y_diff.positive?],[x_diff.positive?, y_diff.negative?]
+    ]
+    conditions.each_with_index do |condition, i|
+      x = check_piece.x + 1 if i > 1
+      x = check_piece.x - 1 if i < 2
+      y = check_piece.y + 1 if i.even?
+      y = check_piece.y - 1 if i.odd?
+      if condition[0] && condition[1]
+        until x == king.x || y == king.y
+          @blocking_moves << [x, y]
+          x += 1 if i > 1
+          x -= 1 if i < 2
+          y += 1 if i.even?
+          y -= 1 if i.odd?
         end
       end
     end
@@ -150,46 +160,30 @@ class Game < Board
 
   def blocking_moves
     @blocking_moves = []
-    non_blockable_pieces = [Knight, Pawn]
-    return @blocking_moves if non_blockable_pieces.include?(@@checking_piece.class)
-    king = @@w_king if @turn == "w"
-    king = @@b_king if @turn == "b"
-    check = @@checking_piece
-    x_result = king.x - check.x
-    y_result = king.y - check.y
-    if x_result.zero? || y_result.zero?
-      @@checking_piece.legal_moves.each do |position|
-        x_ord = position[0]
-        y_ord = position[1]
-        x1 = king.x < check.x ? king.x : check.x
-        x2 = king.x >= check.x ? king.x : check.x
-        y1 = king.y < check.y ? king.y : check.y
-        y2 = king.y >= check.y ? king.y : check.y
-        if (x_ord.between?(x1,x2)) && (y_ord.between?(y1,y2))
-          @blocking_moves << [x_ord,y_ord]
-        end
-      end
-      @blocking_moves
+    return [] if non_blockable_check?
+    king = set_king
+    check = checking_piece
+    x_diff = king.x - check.x
+    y_diff = king.y - check.y
+    if x_diff.zero? || y_diff.zero?
+      blocking_moves_vert_hor(king, check)
     else
-      blocking_moves_diagonal(king, check, x_result, y_result)
+      blocking_moves_diagonal(king, check, x_diff, y_diff)
     end
   end
 
   # Returns the piece that is checking the king
   def checking_piece
-    king = @@w_king if @turn == "w"
-    king = @@b_king if @turn == "b"
-    @@checking_piece = nil
-    @@board.each do |row|
-      row.each do |piece|
-        next if piece == " " || piece.color == king.color
-        piece.legal_moves
-        if piece.capture_moves.include?(king.position)
-          @@checking_piece = piece
-        end
+    king = set_king
+    checking_piece = nil
+    for_each_piece do |piece|
+      next if piece == " " || piece.color == king.color
+      piece.legal_moves
+      if piece.capture_moves.include?(king.position)
+        checking_piece = piece
       end
     end
-    @@checking_piece
+    checking_piece
   end
 
   def for_each_piece
@@ -233,11 +227,12 @@ class Game < Board
   # Always called upon a King piece
   def enemy_possible_check_moves
     keep = []
-    for_each_piece do
-      unless @@selected.class != King || piece.color == @@selected.color
+    for_each_piece do |piece|
+      unless @@selected.nil? || piece == " " || 
+        piece.color == @@selected.color
         if piece.class == Pawn
           keep << piece.possible_capture_moves
-        elsif piece != " "
+        else
           piece.capture_moves
           keep << piece.legal_moves << piece.check_move
         end
@@ -264,6 +259,32 @@ class Game < Board
     end
   end
 
+  def any_blocking_moves?
+    !(@@selected.legal_moves & blocking_moves).empty?
+  end
+
+  def any_capture_moves?
+    !(@@selected.capture_moves.flatten & checking_piece.position).empty?
+  end
+
+  def assign_new_moves(moves_1, moves_2)
+    @@selected.assign_legal_moves = moves_1
+    @@selected.assign_capture_moves = moves_2
+    @@selected.possible_moves
+  end
+
+  def get_moves(type)
+    if type == "king"
+      @@selected.king_legal_moves
+      @@selected.king_capture_moves
+    else
+      @@selected.legal_moves
+      @@selected.capture_moves
+      @@selected.possible_moves
+      @@selected.en_passant? if @@selected.class == Pawn
+    end
+  end
+
   # input > ex. 'a5'
   def select(position)
     x, y = convert_move(position)
@@ -273,26 +294,16 @@ class Game < Board
       return false
     else
       if (in_check? && @@selected.class != King)
-        if !(@@selected.legal_moves & blocking_moves).empty?
-          @@selected.assign_legal_moves = (@@selected.legal_moves & blocking_moves)
-          @@selected.assign_capture_moves = []
-          @@selected.possible_moves
-        elsif !(@@selected.capture_moves.flatten & @@checking_piece.position).empty?
-          @@selected.assign_capture_moves = [@@checking_piece.position]
-          @@selected.assign_legal_moves = []
-          @@selected.possible_moves
+        if any_blocking_moves?
+          assign_new_moves(@@selected.legal_moves & blocking_moves, [])
+        elsif any_capture_moves?
+          assign_new_moves([],[checking_piece.position])
         else
           @@selected = nil
           return false
         end
-      elsif @@selected.class == King
-        @@selected.king_legal_moves
-        @@selected.king_capture_moves
       else
-        @@selected.legal_moves
-        @@selected.capture_moves
-        @@selected.possible_moves
-        @@selected.en_passant? if @@selected.class == Pawn
+        @@selected.class == King ? get_moves("king") : get_moves("other")
       end
       return true
     end
