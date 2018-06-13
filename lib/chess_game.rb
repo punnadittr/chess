@@ -1,10 +1,8 @@
 # defines game logic / determines game over / get user_input
 class Game < Board
 
-  def initialize
-    @checked = false
-    @game_over = false
-    @turn = "w"
+  def initialize(turn = "w")
+    @turn = turn
   end
 
   def selected
@@ -13,6 +11,10 @@ class Game < Board
 
   def turn
     @turn
+  end
+
+  def turn=(newturn)
+    @turn = newturn
   end
 
   def enemy_in_check?
@@ -55,11 +57,16 @@ class Game < Board
   end
 
   def track_input
-    puts "#{@turn}'s turn, Please select a piece"
+    puts "#{turn}'s turn, Please select a piece"
     user_input = gets.chomp
     if user_input == "deselect"
       deselect
       puts "Deselected, please select a new piece"
+    elsif user_input == "save"
+      save
+    elsif user_input == "load"
+      load
+      print_board
     elsif @@selected.nil?
       select(user_input)
       print_board
@@ -67,13 +74,25 @@ class Game < Board
       if @@selected.move(user_input) && !game_over?
         switch_turn
       end
-    elsif user_input == "save"
-      save
-    elsif user_input == "load"
-      load
     else
       puts "INVALID INPUT"
     end
+  end
+
+  def save
+    saved_turn = turn.to_json
+    saved_board = @@board.to_json
+    File.open("save_game.json", "w") { |file| file.write(saved_board) }
+    File.open("turn.json", "w") { |file| file.write(saved_turn) }
+    puts "Game Saved!"
+  end
+
+  def load
+    board_save = File.open("save_game.json", "r").read
+    turn_save = File.open("turn.json", "r").read
+    @@board = JSON.load(board_save)
+    @turn = JSON.load(turn_save)
+    puts "Game Loaded!"
   end
 
   def deselect
@@ -92,7 +111,7 @@ class Game < Board
   end
 
   def no_blocking_moves?
-    (enemy_legal_moves & blocking_moves).empty?
+    (enemy_legal_moves & blocking_moves("mate")).empty?
   end
 
   def no_defending_moves?
@@ -170,11 +189,13 @@ class Game < Board
     @blocking_moves
   end
 
-  def blocking_moves
+  def blocking_moves(mode = "self")
     @blocking_moves = []
-    return [] if non_blockable_check? || enemy_checking_piece.nil?
-    king = set_king
-    check = enemy_checking_piece
+    check = enemy_checking_piece if mode == "self"
+    check = checking_piece if mode == "mate"
+    return [] if non_blockable_check? || check.nil?
+    king = set_king if mode == "self"
+    king = set_alter_king if mode == "mate"
     x_diff = king.x - check.x
     y_diff = king.y - check.y
     if x_diff.zero? || y_diff.zero?
@@ -254,8 +275,7 @@ class Game < Board
   def enemy_possible_check_moves
     keep = []
     for_each_piece do |piece|
-      unless @@selected.nil? || piece == " " || 
-        piece.color == @@selected.color
+      unless piece == " " || piece.color == self.color
         if piece.class == Pawn
           keep << piece.possible_capture_moves
         else

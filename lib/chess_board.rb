@@ -1,4 +1,5 @@
 require "colorize"
+require "json"
 # Create a chessboard and function to assign item to the board
 class Board
 
@@ -113,3 +114,7 @@ require_relative "bishop"
 require_relative "queen"
 require_relative "knight"
 require_relative "king"
+
+game = Game.new
+myboard = Board.new
+game.start_game
