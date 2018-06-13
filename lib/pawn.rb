@@ -1,15 +1,13 @@
 class Pawn < Pieces
   attr_reader :two_steps
 
-  def initialize(x,y, color = "w")
+  def initialize(x,y, color = "w",position = [x,y], two_steps = false, first_move = true)
     @color = color
     @x = x
     @y = y
-    @position = [x,y]
-    @two_steps = false
-    @first_move = true
-    @possible_moves = []
-    @en_passant = []
+    @position = position
+    @two_steps = two_steps
+    @first_move = first_move
   end
 
   # Promote the pawn when reaching top (white) or bottom (black)
@@ -154,5 +152,28 @@ class Pawn < Pieces
     else
       false
     end
+  end
+
+  def self.json_create(o)
+    new(o["data"]["x"], 
+      o["data"]["y"], 
+      o["data"]["color"], 
+      o["data"]["position"],
+      o["data"]["two_steps"],
+      o["data"]["first_move"])
+  end
+
+  def to_json(*a)
+    {
+      "json_class"   => self.class.name,
+      "data"         => {
+                        "color" => @color,
+                        "x" => @x,
+                        "y" => @y,
+                        "position" => @position,
+                        "two_steps" => @two_steps,
+                        "first_move" => @first_move,
+                      }
+    }.to_json(*a)
   end
 end

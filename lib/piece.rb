@@ -3,19 +3,43 @@ class Pieces < Game
   CONDITION = lambda { |x,y| x.between?(0,7) && y.between?(0,7) }
 
   attr_reader :color
-  attr_accessor :check_move, :x, :y, :position, :moved
+  attr_accessor :x, :y, :position, :moved
 
-  def initialize(x,y, color = 'w')
-    @color = color
+  def initialize(x,y, color = 'w', position = [x,y], king_step = false, moved = false)
     @x = x
     @y = y
-    @position = [x,y]
-    @possible_moves = []
-    @legal_moves = []
-    @capture_moves = []
+    @color = color
+    @position = position
+    @king_step = king_step
+    @moved = moved
     @check_move = []
-    @king_step = false
-    @moved = false
+  end
+
+  def check_move
+    @check_move
+  end
+
+  def self.json_create(o)
+    new(o["data"]["x"], 
+      o["data"]["y"], 
+      o["data"]["color"], 
+      o["data"]["position"],
+      o["data"]["king_step"],
+      o["data"]["moved"])
+  end
+
+  def to_json(*a)
+    {
+      "json_class"   => self.class.name,
+      "data"         => {
+                        "color" => @color,
+                        "x" => @x,
+                        "y" => @y,
+                        "position" => @position,
+                        "king_step" => @king_step,
+                        "moved" => @moved
+                      }
+    }.to_json(*a)
   end
 
   def show_legal_moves
